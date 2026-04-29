@@ -642,7 +642,10 @@
         <button class="add-btn" onclick="addItem()">추가</button>
       </div>
       <div class="items-list" id="itemsList"></div>
-      <button class="reset-btn" onclick="resetItems()">전체 초기화</button>
+      <div style="display:flex; gap:8px;">
+        <button class="reset-btn" onclick="openImportModal()" style="flex:1; border-color:rgba(95,39,205,0.4); background:rgba(95,39,205,0.1); color:#a29bfe;">📥 가져오기</button>
+        <button class="reset-btn" onclick="resetItems()" style="flex:1;">전체 초기화</button>
+      </div>
     </div>
 
     <div class="tab-content" id="contentMembers">
@@ -667,6 +670,21 @@
     <div class="label">당첨 결과</div>
     <div class="winner" id="winnerName"></div>
     <button class="close-btn" onclick="document.getElementById('modal').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<div class="dislike-modal-overlay" id="importModal" onclick="closeImportModal(event)">
+  <div class="dislike-modal" style="width: 360px;">
+    <h3>데이터 가져오기</h3>
+    <div id="legacyMigrationSection" style="display:none;">
+      <div class="member-label">기기에 저장된 이전 데이터</div>
+      <div id="legacyDataSummary" style="font-size:13px; color:rgba(255,255,255,0.7); padding:10px 12px; background:rgba(95,39,205,0.1); border:1px solid rgba(95,39,205,0.3); border-radius:10px;"></div>
+      <button class="confirm-btn" onclick="migrateLegacyData()">Supabase로 이전</button>
+      <div style="height:1px; background:rgba(255,255,255,0.1); margin:4px 0;"></div>
+    </div>
+    <div class="member-label">식당 일괄 추가 (한 줄에 한 개)</div>
+    <textarea id="bulkInput" placeholder="김밥천국&#10;교촌치킨&#10;설빙" style="width:100%; height:140px; padding:12px; border-radius:10px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-family:inherit; font-size:14px; resize:vertical; outline:none; box-sizing:border-box;"></textarea>
+    <button class="confirm-btn" onclick="bulkAddItems()">일괄 추가</button>
   </div>
 </div>
 
@@ -1050,6 +1068,129 @@
     if (e.target === e.currentTarget) {
       e.currentTarget.classList.remove('show');
     }
+  }
+
+  // 데이터 가져오기 모달
+  function openImportModal() {
+    const legacyItems = JSON.parse(localStorage.getItem('spinnerItems') || '[]');
+    const legacyMembers = JSON.parse(localStorage.getItem('spinnerMembers') || '[]');
+    const legacyHistory = JSON.parse(localStorage.getItem('spinnerHistory') || '[]');
+    const hasLegacy = legacyItems.length > 0 || legacyMembers.length > 0 || legacyHistory.length > 0;
+
+    const section = document.getElementById('legacyMigrationSection');
+    if (hasLegacy) {
+      document.getElementById('legacyDataSummary').textContent =
+        `식당 ${legacyItems.length}개, 멤버 ${legacyMembers.length}명, 이력 ${legacyHistory.length}건`;
+      section.style.display = 'flex';
+      section.style.flexDirection = 'column';
+      section.style.gap = '12px';
+    } else {
+      section.style.display = 'none';
+    }
+
+    document.getElementById('bulkInput').value = '';
+    document.getElementById('importModal').classList.add('show');
+  }
+
+  function closeImportModal(e) {
+    if (e.target === e.currentTarget) {
+      e.currentTarget.classList.remove('show');
+    }
+  }
+
+  async function migrateLegacyData() {
+    const legacyItems = JSON.parse(localStorage.getItem('spinnerItems') || '[]');
+    const legacyMembers = JSON.parse(localStorage.getItem('spinnerMembers') || '[]');
+    const legacyActive = JSON.parse(localStorage.getItem('spinnerActiveMembers') || '[]');
+    const legacyHistory = JSON.parse(localStorage.getItem('spinnerHistory') || '[]');
+
+    if (!confirm(`로컬 데이터를 Supabase로 이전합니다.\n식당 ${legacyItems.length}개, 멤버 ${legacyMembers.length}명, 이력 ${legacyHistory.length}건\n계속하시겠습니까?`)) return;
+
+    try {
+      // 1. 식당 추가 (이름 중복 무시)
+      const restaurantMap = Object.fromEntries(items.map(i => [i.name, i.id]));
+      for (const name of legacyItems) {
+        if (restaurantMap[name]) continue;
+        const { data, error } = await sb.from('restaurants').insert({ name }).select().single();
+        if (!error && data) {
+          restaurantMap[name] = data.id;
+        }
+      }
+
+      // 2. 멤버 추가 + 비선호 동기화
+      for (const m of legacyMembers) {
+        let memberId = members.find(em => em.name === m.name)?.id;
+        if (!memberId) {
+          const isActive = legacyActive.includes(m.id);
+          const { data, error } = await sb.from('members').insert({ name: m.name, is_active: isActive }).select().single();
+          if (error) continue;
+          memberId = data.id;
+        }
+        if (m.dislikes && m.dislikes.length > 0) {
+          const rows = m.dislikes
+            .map(name => restaurantMap[name])
+            .filter(Boolean)
+            .map(rid => ({ member_id: memberId, restaurant_id: rid }));
+          if (rows.length > 0) {
+            await sb.from('member_dislikes').upsert(rows, { onConflict: 'member_id,restaurant_id' });
+          }
+        }
+      }
+
+      // 3. 이력 추가 (오래된 것부터)
+      for (let i = legacyHistory.length - 1; i >= 0; i--) {
+        const h = legacyHistory[i];
+        await sb.from('history').insert({
+          restaurant_name: h.name,
+          active_members: [],
+        });
+      }
+
+      // 4. localStorage 정리
+      localStorage.removeItem('spinnerItems');
+      localStorage.removeItem('spinnerMembers');
+      localStorage.removeItem('spinnerActiveMembers');
+      localStorage.removeItem('spinnerHistory');
+
+      // 5. 다시 로드
+      await loadData();
+      renderItems();
+      renderMembers();
+      renderHistory();
+
+      document.getElementById('importModal').classList.remove('show');
+      alert('이전 완료!');
+    } catch (e) {
+      alert('이전 실패: ' + e.message);
+    }
+  }
+
+  async function bulkAddItems() {
+    const text = document.getElementById('bulkInput').value;
+    const names = text.split('\n').map(s => s.trim()).filter(Boolean);
+    if (names.length === 0) {
+      alert('추가할 식당 이름을 입력해주세요.');
+      return;
+    }
+
+    const existing = new Set(items.map(i => i.name));
+    const newNames = [...new Set(names)].filter(n => !existing.has(n));
+    if (newNames.length === 0) {
+      alert('모두 이미 등록된 식당입니다.');
+      return;
+    }
+
+    const rows = newNames.map(name => ({ name }));
+    const { data, error } = await sb.from('restaurants').insert(rows).select();
+    if (error) {
+      alert('추가 실패: ' + error.message);
+      return;
+    }
+
+    data.forEach(r => items.push({ id: r.id, name: r.name }));
+    renderItems();
+    document.getElementById('importModal').classList.remove('show');
+    alert(`${data.length}개 식당이 추가되었습니다.${newNames.length !== names.length ? `\n(${names.length - newNames.length}개 중복 제외)` : ''}`);
   }
 
   function spin() {
