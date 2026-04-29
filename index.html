@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>랜덤 추첨기</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .app {
+      display: flex;
+      gap: 40px;
+      align-items: center;
+      padding: 40px;
+    }
+
+    /* 왼쪽: 돌림판 영역 */
+    .spinner-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .wheel-container {
+      position: relative;
+      width: 420px;
+      height: 420px;
+    }
+
+    canvas {
+      width: 420px;
+      height: 420px;
+      filter: drop-shadow(0 0 30px rgba(100, 100, 255, 0.3));
+    }
+
+    /* 포인터 (삼각형) */
+    .pointer {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      border-top: 36px solid #ff4757;
+      filter: drop-shadow(0 2px 6px rgba(255, 71, 87, 0.6));
+      z-index: 10;
+      transition: transform 0.1s;
+    }
+
+    .pointer.bounce {
+      animation: pointerBounce 0.15s ease;
+    }
+
+    @keyframes pointerBounce {
+      0%, 100% { transform: translateX(-50%) rotate(0deg); }
+      50% { transform: translateX(-50%) rotate(8deg); }
+    }
+
+    .spin-btn {
+      padding: 16px 60px;
+      font-size: 20px;
+      font-weight: 700;
+      border: none;
+      border-radius: 50px;
+      background: linear-gradient(135deg, #ff4757, #ff6b81);
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
+      letter-spacing: 2px;
+    }
+
+    .spin-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(255, 71, 87, 0.6);
+    }
+
+    .spin-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .excluded-info {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      text-align: center;
+    }
+
+    /* 오른쪽: 항목 관리 패널 */
+    .panel {
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 32px;
+      width: 340px;
+      max-height: 560px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .tabs {
+      display: flex;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 10px 0;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+
+    .tab:hover:not(.active) { color: rgba(255, 255, 255, 0.7); }
+
+    .tab-content { display: none; flex-direction: column; gap: 12px; flex: 1; overflow: hidden; }
+    .tab-content.active { display: flex; }
+
+    .panel h2 {
+      font-size: 20px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      font-size: 15px;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .input-row input::placeholder { color: rgba(255, 255, 255, 0.35); }
+    .input-row input:focus { border-color: rgba(255, 255, 255, 0.4); }
+
+    .add-btn {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #5f27cd, #7c3aed);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .add-btn:hover { opacity: 0.85; }
+
+    .reset-btn {
+      padding: 10px;
+      border: 1px solid rgba(255, 71, 87, 0.4);
+      border-radius: 12px;
+      background: rgba(255, 71, 87, 0.1);
+      color: #ff6b81;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .reset-btn:hover {
+      background: rgba(255, 71, 87, 0.2);
+      border-color: rgba(255, 71, 87, 0.6);
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      padding-right: 4px;
+    }
+
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-track { background: transparent; }
+    .history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+    .history-date {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.4);
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .history-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .history-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .history-entry .h-name {
+      font-weight: 600;
+      color: #f9ca24;
+    }
+
+    .history-entry .h-time {
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 12px;
+    }
+
+    .clear-history-btn {
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.45);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .clear-history-btn:hover {
+      color: #ff6b81;
+      border-color: rgba(255, 71, 87, 0.4);
+    }
+
+    .items-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+    }
+
+    .items-list::-webkit-scrollbar { width: 4px; }
+    .items-list::-webkit-scrollbar-track { background: transparent; }
+    .items-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+    .item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+      font-size: 14px;
+      animation: slideIn 0.25s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .item .color-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .item .name { flex: 1; }
+
+    .item .remove-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      transition: color 0.2s;
+      padding: 0 2px;
+    }
+
+    .item .remove-btn:hover { color: #ff4757; }
+
+    .empty-msg {
+      text-align: center;
+      color: rgba(255, 255, 255, 0.3);
+      font-size: 14px;
+      padding: 30px 0;
+    }
+
+    /* 멤버 관리 */
+    .member-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(255, 255, 255, 0.07);
+      border-radius: 10px;
+      font-size: 14px;
+      animation: slideIn 0.25s ease;
+    }
+
+    .member-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #1dd1a1;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .member-item .member-name {
+      flex: 1;
+      font-weight: 500;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .member-item .member-name:hover {
+      color: #ffa500;
+    }
+
+    .member-item .member-name.inactive {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    .member-item .dislike-count {
+      font-size: 12px;
+      color: #ff6b81;
+      font-weight: 600;
+      flex-shrink: 0;
+      cursor: pointer;
+      padding: 2px 4px;
+    }
+
+    .member-item .dislike-count.zero {
+      color: rgba(255, 255, 255, 0.2);
+    }
+
+    .member-item .remove-btn {
+      background: none;
+      border: none;
+      color: rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      font-size: 18px;
+      line-height: 1;
+      transition: color 0.2s;
+      padding: 0 2px;
+    }
+
+    .member-item .remove-btn:hover { color: #ff4757; }
+
+    .members-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+    }
+
+    .members-list::-webkit-scrollbar { width: 4px; }
+    .members-list::-webkit-scrollbar-track { background: transparent; }
+    .members-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+    /* 결과 모달 */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 48px 56px;
+      text-align: center;
+      animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.7); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal .label {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 12px;
+    }
+
+    .modal .winner {
+      font-size: 42px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #f9ca24, #f0932b, #ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 32px;
+    }
+
+    .modal .confetti-text {
+      font-size: 32px;
+      margin-bottom: 24px;
+    }
+
+    .modal .close-btn {
+      padding: 12px 40px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      background: transparent;
+      color: #fff;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .modal .close-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* 비선호 설정 모달 */
+    .dislike-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .dislike-modal-overlay.show {
+      display: flex;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .dislike-modal {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 32px;
+      width: 320px;
+      max-height: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .dislike-modal h3 {
+      font-size: 16px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .dislike-modal .member-label {
+      text-align: center;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .dislike-modal .member-label span {
+      color: #ffa500;
+      font-weight: 600;
+    }
+
+    .dislike-selected-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 12px;
+      background: rgba(255, 71, 87, 0.08);
+      border: 1px solid rgba(255, 71, 87, 0.2);
+      border-radius: 10px;
+      min-height: 36px;
+      align-items: center;
+    }
+
+    .dislike-selected-summary .selected-tag {
+      font-size: 11px;
+      padding: 3px 8px;
+      background: rgba(255, 71, 87, 0.2);
+      border: 1px solid rgba(255, 71, 87, 0.4);
+      border-radius: 6px;
+      color: #ff6b81;
+      font-weight: 500;
+    }
+
+    .dislike-selected-summary .no-selected {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    .dislike-items-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 280px;
+      padding-right: 4px;
+    }
+
+    .dislike-items-list::-webkit-scrollbar { width: 4px; }
+    .dislike-items-list::-webkit-scrollbar-track { background: transparent; }
+    .dislike-items-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+
+    .dislike-check-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .dislike-check-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .dislike-check-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #ff6b6b;
+      cursor: pointer;
+    }
+
+    .dislike-check-item label {
+      cursor: pointer;
+      flex: 1;
+    }
+
+    .dislike-modal .confirm-btn {
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #5f27cd, #7c3aed);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .dislike-modal .confirm-btn:hover { opacity: 0.85; }
+
+    /* 반응형 */
+    @media (max-width: 860px) {
+      .app {
+        flex-direction: column;
+        padding: 24px 16px;
+      }
+      .wheel-container, canvas {
+        width: 320px;
+        height: 320px;
+      }
+      .panel { width: 100%; max-width: 380px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+  <div class="spinner-section">
+    <div class="wheel-container">
+      <div class="pointer" id="pointer"></div>
+      <canvas id="wheel" width="840" height="840"></canvas>
+    </div>
+    <button class="spin-btn" id="spinBtn" onclick="spin()">추첨하기</button>
+    <div class="excluded-info" id="excludedInfo"></div>
+  </div>
+
+  <div class="panel">
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('manage')" id="tabManage">식당 관리</button>
+      <button class="tab" onclick="switchTab('members')" id="tabMembers">멤버 관리</button>
+      <button class="tab" onclick="switchTab('history')" id="tabHistory">당첨 이력</button>
+    </div>
+
+    <div class="tab-content active" id="contentManage">
+      <div class="input-row">
+        <input type="text" id="itemInput" placeholder="식당 이름 입력..." maxlength="20"
+               onkeydown="if(event.key==='Enter' && !event.isComposing) addItem()">
+        <button class="add-btn" onclick="addItem()">추가</button>
+      </div>
+      <div class="items-list" id="itemsList"></div>
+      <button class="reset-btn" onclick="resetItems()">전체 초기화</button>
+    </div>
+
+    <div class="tab-content" id="contentMembers">
+      <div class="input-row">
+        <input type="text" id="memberInput" placeholder="멤버 이름 입력..." maxlength="10"
+               onkeydown="if(event.key==='Enter' && !event.isComposing) addMember()">
+        <button class="add-btn" onclick="addMember()">추가</button>
+      </div>
+      <div class="members-list" id="membersList"></div>
+    </div>
+
+    <div class="tab-content" id="contentHistory">
+      <div class="history-list" id="historyList"></div>
+      <button class="clear-history-btn" onclick="clearHistory()">이력 삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="confetti-text">🎉</div>
+    <div class="label">당첨 결과</div>
+    <div class="winner" id="winnerName"></div>
+    <button class="close-btn" onclick="document.getElementById('modal').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<div class="dislike-modal-overlay" id="dislikeModal" onclick="closeDislikeModal(event)">
+  <div class="dislike-modal">
+    <h3>비선호 식당 설정</h3>
+    <div class="member-label"><span id="dislikeMemberName"></span>님의 비선호 식당</div>
+    <div class="dislike-selected-summary" id="dislikeSelectedSummary">
+      <span class="no-selected">선택된 항목 없음</span>
+    </div>
+    <div class="dislike-items-list" id="dislikeItemsList"></div>
+    <button class="confirm-btn" onclick="saveDislike()">확인</button>
+  </div>
+</div>
+
+<script>
+  const COLORS = [
+    '#ff6b6b', '#5f27cd', '#00d2d3', '#f9ca24', '#ff9ff3',
+    '#1dd1a1', '#54a0ff', '#ff6348', '#a29bfe', '#fd79a8',
+    '#e17055', '#00cec9', '#6c5ce7', '#fdcb6e', '#e84393',
+    '#0984e3', '#d63031', '#00b894', '#e056fd', '#f78fb3',
+  ];
+
+  let items = JSON.parse(localStorage.getItem('spinnerItems') || '[]');
+  let members = JSON.parse(localStorage.getItem('spinnerMembers') || '[]');
+  let activeMembers = JSON.parse(localStorage.getItem('spinnerActiveMembers') || '[]');
+  let spinning = false;
+  let currentAngle = 0;
+  let editingMemberId = null;
+
+  function saveItems() {
+    localStorage.setItem('spinnerItems', JSON.stringify(items));
+  }
+
+  function saveMembers() {
+    localStorage.setItem('spinnerMembers', JSON.stringify(members));
+  }
+
+  function saveActiveMembers() {
+    localStorage.setItem('spinnerActiveMembers', JSON.stringify(activeMembers));
+  }
+
+  const canvas = document.getElementById('wheel');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width;
+  const H = canvas.height;
+  const CX = W / 2;
+  const CY = H / 2;
+  const R = W / 2 - 20;
+
+  // 가중치 계산: 참여 멤버 중 1명이라도 비선호하면 제외
+  function getWeightedItems() {
+    const active = members.filter(m => activeMembers.includes(m.id));
+    if (active.length === 0) {
+      // 참여 멤버가 0명이면 모든 식당 동일 확률
+      return items.map(name => ({ name, weight: 1, excluded: false }));
+    }
+
+    return items.map(name => {
+      const disliked = active.some(m => m.dislikes.includes(name));
+      if (disliked) {
+        return { name, weight: 0, excluded: true };
+      }
+      return { name, weight: 1, excluded: false };
+    });
+  }
+
+  function drawWheel() {
+    ctx.clearRect(0, 0, W, H);
+
+    const weighted = getWeightedItems();
+    const visible = weighted.filter(w => !w.excluded);
+    const excludedCount = weighted.filter(w => w.excluded).length;
+
+    // 제외 안내 텍스트 업데이트
+    const infoEl = document.getElementById('excludedInfo');
+    if (excludedCount > 0) {
+      infoEl.textContent = `${excludedCount}개 식당 제외됨`;
+    } else {
+      infoEl.textContent = '';
+    }
+
+    if (visible.length === 0) {
+      // 빈 상태 그리기
+      ctx.beginPath();
+      ctx.arc(CX, CY, R, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.font = '600 28px -apple-system, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const msg = items.length === 0 ? '항목을 추가해주세요' : '모든 식당이 제외됨';
+      ctx.fillText(msg, CX, CY);
+      return;
+    }
+
+    // 가중치 합산
+    const totalWeight = visible.reduce((sum, w) => sum + w.weight, 0);
+
+    // 슬라이스 그리기 (가중치 비례 크기)
+    let angleOffset = currentAngle;
+    visible.forEach((item, i) => {
+      const sliceAngle = (item.weight / totalWeight) * Math.PI * 2;
+      const startAngle = angleOffset;
+      const endAngle = angleOffset + sliceAngle;
+
+      // 파이 조각
+      ctx.beginPath();
+      ctx.moveTo(CX, CY);
+      ctx.arc(CX, CY, R, startAngle, endAngle);
+      ctx.closePath();
+      // 원래 items 배열 내의 인덱스를 찾아서 색상 매칭
+      const originalIndex = items.indexOf(item.name);
+      ctx.fillStyle = COLORS[originalIndex % COLORS.length];
+      ctx.fill();
+
+      // 경계선
+      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 텍스트
+      ctx.save();
+      ctx.translate(CX, CY);
+      ctx.rotate(startAngle + sliceAngle / 2);
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      const fontSize = visible.length <= 6 ? 26 : visible.length <= 10 ? 22 : 18;
+      ctx.font = `700 ${fontSize}px -apple-system, sans-serif`;
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 4;
+
+      const textR = R * 0.62;
+      const label = item.name.length > 8 ? item.name.slice(0, 7) + '…' : item.name;
+      ctx.fillText(label, textR, 0);
+      ctx.restore();
+
+      angleOffset = endAngle;
+    });
+
+    // 중심 원
+    ctx.beginPath();
+    ctx.arc(CX, CY, 30, 0, Math.PI * 2);
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  }
+
+  function renderItems() {
+    const list = document.getElementById('itemsList');
+    if (items.length === 0) {
+      list.innerHTML = '<div class="empty-msg">아직 추가된 항목이 없습니다</div>';
+    } else {
+      list.innerHTML = items.map((name, i) => `
+        <div class="item">
+          <span class="color-dot" style="background:${COLORS[i % COLORS.length]}"></span>
+          <span class="name">${escapeHtml(name)}</span>
+          <button class="remove-btn" onclick="removeItem(${i})" title="삭제">&times;</button>
+        </div>
+      `).join('');
+    }
+    drawWheel();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function addItem() {
+    const input = document.getElementById('itemInput');
+    const name = input.value.trim();
+    if (!name) return;
+    items.push(name);
+    input.value = '';
+    input.focus();
+    saveItems();
+    renderItems();
+  }
+
+  function removeItem(index) {
+    if (spinning) return;
+    const removedName = items[index];
+    items.splice(index, 1);
+    // 멤버들의 비선호 목록에서도 제거
+    members.forEach(m => {
+      const idx = m.dislikes.indexOf(removedName);
+      if (idx !== -1) m.dislikes.splice(idx, 1);
+    });
+    saveItems();
+    saveMembers();
+    renderItems();
+  }
+
+  function resetItems() {
+    if (spinning) return;
+    if (items.length === 0) return;
+    if (!confirm('모든 항목을 초기화하시겠습니까?')) return;
+    items = [];
+    currentAngle = 0;
+    // 비선호 목록도 클리어
+    members.forEach(m => m.dislikes = []);
+    saveItems();
+    saveMembers();
+    renderItems();
+  }
+
+  // 멤버 관리
+  function addMember() {
+    const input = document.getElementById('memberInput');
+    const name = input.value.trim();
+    if (!name) return;
+    if (members.length >= 20) {
+      alert('최대 20명까지 추가할 수 있습니다.');
+      return;
+    }
+    const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    const member = { id, name, dislikes: [] };
+    members.push(member);
+    activeMembers.push(id);
+    input.value = '';
+    input.focus();
+    saveMembers();
+    saveActiveMembers();
+    renderMembers();
+    drawWheel();
+  }
+
+  function removeMember(id) {
+    members = members.filter(m => m.id !== id);
+    activeMembers = activeMembers.filter(mid => mid !== id);
+    saveMembers();
+    saveActiveMembers();
+    renderMembers();
+    drawWheel();
+  }
+
+  function toggleMember(id) {
+    if (activeMembers.includes(id)) {
+      activeMembers = activeMembers.filter(mid => mid !== id);
+    } else {
+      activeMembers.push(id);
+    }
+    saveActiveMembers();
+    renderMembers();
+    drawWheel();
+  }
+
+  function renderMembers() {
+    const list = document.getElementById('membersList');
+    if (members.length === 0) {
+      list.innerHTML = '<div class="empty-msg">아직 추가된 멤버가 없습니다</div>';
+      return;
+    }
+    list.innerHTML = members.map(m => {
+      const isActive = activeMembers.includes(m.id);
+      const dislikeCount = m.dislikes.length;
+      return `
+        <div class="member-item">
+          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleMember('${m.id}')" title="참여 여부">
+          <span class="member-name ${isActive ? '' : 'inactive'}" onclick="openDislikeModal('${m.id}')">${escapeHtml(m.name)}</span>
+          <span class="dislike-count ${dislikeCount === 0 ? 'zero' : ''}" onclick="openDislikeModal('${m.id}')" title="비선호 식당">${dislikeCount}</span>
+          <button class="remove-btn" onclick="removeMember('${m.id}')" title="삭제">&times;</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // 비선호 설정 모달
+  function openDislikeModal(memberId) {
+    editingMemberId = memberId;
+    const member = members.find(m => m.id === memberId);
+    if (!member) return;
+
+    document.getElementById('dislikeMemberName').textContent = member.name;
+
+    const list = document.getElementById('dislikeItemsList');
+    if (items.length === 0) {
+      list.innerHTML = '<div class="empty-msg">등록된 식당이 없습니다</div>';
+    } else {
+      list.innerHTML = items.map((name, i) => {
+        const checked = member.dislikes.includes(name) ? 'checked' : '';
+        return `
+          <div class="dislike-check-item" onclick="toggleDislikeCheck(this, event)">
+            <input type="checkbox" ${checked} data-name="${escapeHtml(name)}" id="dislike-${i}" onchange="updateDislikeSummary()">
+            <label for="dislike-${i}">${escapeHtml(name)}</label>
+          </div>
+        `;
+      }).join('');
+    }
+
+    updateDislikeSummary();
+    document.getElementById('dislikeModal').classList.add('show');
+  }
+
+  function toggleDislikeCheck(el, event) {
+    if (event.target.tagName === 'INPUT') return;
+    const checkbox = el.querySelector('input[type="checkbox"]');
+    checkbox.checked = !checkbox.checked;
+    updateDislikeSummary();
+  }
+
+  function updateDislikeSummary() {
+    const summary = document.getElementById('dislikeSelectedSummary');
+    const checkboxes = document.querySelectorAll('#dislikeItemsList input[type="checkbox"]:checked');
+    if (checkboxes.length === 0) {
+      summary.innerHTML = '<span class="no-selected">선택된 항목 없음</span>';
+    } else {
+      summary.innerHTML = Array.from(checkboxes)
+        .map(cb => `<span class="selected-tag">${escapeHtml(cb.dataset.name)}</span>`)
+        .join('');
+    }
+  }
+
+  function saveDislike() {
+    const member = members.find(m => m.id === editingMemberId);
+    if (!member) return;
+
+    const checkboxes = document.querySelectorAll('#dislikeItemsList input[type="checkbox"]');
+    member.dislikes = [];
+    checkboxes.forEach(cb => {
+      if (cb.checked) {
+        member.dislikes.push(cb.dataset.name);
+      }
+    });
+
+    saveMembers();
+    renderMembers();
+    drawWheel();
+    document.getElementById('dislikeModal').classList.remove('show');
+  }
+
+  function closeDislikeModal(e) {
+    if (e.target === e.currentTarget) {
+      e.currentTarget.classList.remove('show');
+    }
+  }
+
+  function spin() {
+    const weighted = getWeightedItems();
+    const visible = weighted.filter(w => !w.excluded);
+
+    if (spinning || visible.length < 2) {
+      if (visible.length < 2) alert('추첨 가능한 식당이 2개 이상이어야 합니다.');
+      return;
+    }
+
+    spinning = true;
+    document.getElementById('spinBtn').disabled = true;
+
+    const totalWeight = visible.reduce((sum, w) => sum + w.weight, 0);
+
+    // 가중치 기반 랜덤 선택
+    let rand = Math.random() * totalWeight;
+    let winnerIndex = 0;
+    for (let i = 0; i < visible.length; i++) {
+      rand -= visible[i].weight;
+      if (rand <= 0) {
+        winnerIndex = i;
+        break;
+      }
+    }
+
+    const winnerName = visible[winnerIndex].name;
+
+    // 당첨 슬라이스의 중심 각도 계산 (가중치 기반)
+    let angleToWinnerCenter = 0;
+    for (let i = 0; i < winnerIndex; i++) {
+      angleToWinnerCenter += (visible[i].weight / totalWeight) * Math.PI * 2;
+    }
+    angleToWinnerCenter += (visible[winnerIndex].weight / totalWeight) * Math.PI;
+
+    // 포인터는 12시 방향(-π/2)에 위치
+    const targetAngle = -Math.PI / 2 - angleToWinnerCenter;
+
+    // 여러 바퀴 회전 + 목표 각도
+    const fullSpins = 5 + Math.floor(Math.random() * 3);
+    const totalRotation = fullSpins * Math.PI * 2 + (targetAngle - currentAngle);
+
+    const startAngle = currentAngle;
+    const endAngle = startAngle + totalRotation;
+    const duration = 4000 + Math.random() * 1000;
+    const startTime = performance.now();
+
+    const pointer = document.getElementById('pointer');
+    let lastSliceIndex = -1;
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+
+      currentAngle = startAngle + totalRotation * eased;
+      drawWheel();
+
+      // 포인터 바운스 (슬라이스 경계 통과 시)
+      const pointerAngle = ((-currentAngle - Math.PI / 2) % (Math.PI * 2) + Math.PI * 4) % (Math.PI * 2);
+      let accum = 0;
+      let currentSliceIdx = 0;
+      for (let i = 0; i < visible.length; i++) {
+        accum += (visible[i].weight / totalWeight) * Math.PI * 2;
+        if (pointerAngle < accum) {
+          currentSliceIdx = i;
+          break;
+        }
+      }
+      if (currentSliceIdx !== lastSliceIndex) {
+        lastSliceIndex = currentSliceIdx;
+        pointer.classList.remove('bounce');
+        void pointer.offsetWidth;
+        pointer.classList.add('bounce');
+      }
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        currentAngle = endAngle;
+        drawWheel();
+        spinning = false;
+        document.getElementById('spinBtn').disabled = false;
+        showResult(winnerName);
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+  // 당첨 이력
+  let history = JSON.parse(localStorage.getItem('spinnerHistory') || '[]');
+
+  function saveHistory() {
+    localStorage.setItem('spinnerHistory', JSON.stringify(history));
+  }
+
+  function addHistory(name) {
+    const now = new Date();
+    history.unshift({
+      name,
+      date: now.toLocaleDateString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit' }),
+      time: now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', hour12: false }),
+    });
+    if (history.length > 100) history = history.slice(0, 100);
+    saveHistory();
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const list = document.getElementById('historyList');
+    if (history.length === 0) {
+      list.innerHTML = '<div class="empty-msg">아직 당첨 이력이 없습니다</div>';
+      return;
+    }
+    const grouped = {};
+    history.forEach(h => {
+      if (!grouped[h.date]) grouped[h.date] = [];
+      grouped[h.date].push(h);
+    });
+    list.innerHTML = Object.entries(grouped).map(([date, entries]) => `
+      <div>
+        <div class="history-date">${date}</div>
+        <div class="history-group">
+          ${entries.map(e => `
+            <div class="history-entry">
+              <span class="h-name">${escapeHtml(e.name)}</span>
+              <span class="h-time">${e.time}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function clearHistory() {
+    if (history.length === 0) return;
+    if (!confirm('모든 당첨 이력을 삭제하시겠습니까?')) return;
+    history = [];
+    saveHistory();
+    renderHistory();
+  }
+
+  function switchTab(tab) {
+    document.getElementById('tabManage').classList.toggle('active', tab === 'manage');
+    document.getElementById('tabMembers').classList.toggle('active', tab === 'members');
+    document.getElementById('tabHistory').classList.toggle('active', tab === 'history');
+    document.getElementById('contentManage').classList.toggle('active', tab === 'manage');
+    document.getElementById('contentMembers').classList.toggle('active', tab === 'members');
+    document.getElementById('contentHistory').classList.toggle('active', tab === 'history');
+    if (tab === 'history') renderHistory();
+    if (tab === 'members') renderMembers();
+  }
+
+  function showResult(name) {
+    addHistory(name);
+    document.getElementById('winnerName').textContent = name;
+    document.getElementById('modal').classList.add('show');
+  }
+
+  function closeModal(e) {
+    if (e.target === e.currentTarget) {
+      e.currentTarget.classList.remove('show');
+    }
+  }
+
+  // activeMembers 정합성 체크 (삭제된 멤버 제거)
+  activeMembers = activeMembers.filter(id => members.some(m => m.id === id));
+  saveActiveMembers();
+
+  // 초기 렌더링
+  renderItems();
+  renderMembers();
+</script>
+
+</body>
+</html>
