@@ -293,29 +293,44 @@
     .team-badge[data-team="컨텐츠팀"] { background: #fff0c1; color: #a87a00; }
     .team-badge[data-team="플랫폼팀"] { background: #e0d6ff; color: #5a3a99; }
 
-    /* 멤버 일괄 선택 체크박스 */
-    .bulk-check {
+    /* 일괄 선택 텍스트 버튼 */
+    .bulk-text-action {
       display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
-      background: #fff8f0;
-      border: 2px solid #111;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 700;
-      color: #111;
-      user-select: none;
+      justify-content: flex-end;
+      padding: 0 4px;
     }
 
-    .bulk-check:hover { background: #ffe9f3; }
-
-    .bulk-check input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: #ff5fa2;
+    .bulk-text-btn {
+      background: none;
+      border: none;
+      color: #ff3a8e;
+      font-size: 13px;
+      font-weight: 800;
       cursor: pointer;
+      padding: 2px 6px;
+      letter-spacing: 0.3px;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .bulk-text-btn:hover {
+      color: #ff5fa2;
+    }
+
+    /* 멤버 그룹 헤더 (팀별 정렬) */
+    .member-group-header {
+      font-size: 11px;
+      font-weight: 800;
+      color: #111;
+      padding: 6px 4px 4px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      border-bottom: 1.5px dashed #111;
+      margin-top: 6px;
+    }
+
+    .member-group-header:first-child {
+      margin-top: 0;
     }
 
     .team-filter-chips {
@@ -349,7 +364,7 @@
     body.readonly .input-row,
     body.readonly .add-restaurant-btn,
     body.readonly .add-member-btn,
-    body.readonly .bulk-check,
+    body.readonly .bulk-text-action,
     body.readonly .team-filter-chips,
     body.readonly .clear-history-btn,
     body.readonly .item .remove-btn,
@@ -931,11 +946,10 @@
 
     <div class="tab-content" id="contentMembers">
       <button class="add-member-btn" onclick="openAddMemberModal()">+ 멤버 추가</button>
-      <label class="bulk-check">
-        <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllMembers(event)">
-        <span>모두 선택</span>
-      </label>
       <div class="team-filter-chips" id="teamFilterChips"></div>
+      <div class="bulk-text-action">
+        <button class="bulk-text-btn" id="selectAllBtn" onclick="handleSelectAllToggle()">모두 선택</button>
+      </div>
       <div class="members-list" id="membersList"></div>
     </div>
 
@@ -1470,22 +1484,21 @@
     await sb.from('members').update({ is_active: active }).eq('group_slug', currentGroup.slug);
   }
 
-  function toggleAllMembers(e) {
-    setAllMembersActive(e.target.checked);
+  function handleSelectAllToggle() {
+    if (members.length === 0) return;
+    const allActive = members.every(m => activeMembers.includes(m.id));
+    setAllMembersActive(!allActive);
   }
 
-  function updateBulkCheckbox() {
-    const cb = document.getElementById('selectAllCheckbox');
-    if (!cb) return;
+  function updateBulkText() {
+    const btn = document.getElementById('selectAllBtn');
+    if (!btn) return;
     if (members.length === 0) {
-      cb.checked = false;
-      cb.indeterminate = false;
+      btn.textContent = '모두 선택';
       return;
     }
     const allActive = members.every(m => activeMembers.includes(m.id));
-    const noneActive = activeMembers.length === 0;
-    cb.checked = allActive;
-    cb.indeterminate = !allActive && !noneActive;
+    btn.textContent = allActive ? '모두 해제' : '모두 선택';
   }
 
   async function toggleTeamActive(team) {
@@ -1524,27 +1537,47 @@
     });
   }
 
+  function renderMemberItem(m) {
+    const isActive = activeMembers.includes(m.id);
+    const dislikeCount = m.dislikes.length;
+    return `
+      <div class="member-item">
+        <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleMember(${m.id})" title="참여 여부">
+        <span class="member-name ${isActive ? '' : 'inactive'}" onclick="openEditMember(${m.id})">${escapeHtml(m.name)}</span>
+        <span class="dislike-count ${dislikeCount === 0 ? 'zero' : ''}" onclick="openDislikeModal(${m.id})" title="비선호 식당">${dislikeCount}</span>
+        <button class="remove-btn" onclick="removeMember(${m.id})" title="삭제">&times;</button>
+      </div>
+    `;
+  }
+
   function renderMembers() {
     renderTeamFilterChips();
-    updateBulkCheckbox();
+    updateBulkText();
     const list = document.getElementById('membersList');
     if (members.length === 0) {
       list.innerHTML = '<div class="empty-msg">아직 추가된 멤버가 없습니다</div>';
       return;
     }
-    list.innerHTML = members.map(m => {
-      const isActive = activeMembers.includes(m.id);
-      const dislikeCount = m.dislikes.length;
-      return `
-        <div class="member-item">
-          <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleMember(${m.id})" title="참여 여부">
-          <span class="member-name ${isActive ? '' : 'inactive'}" onclick="openEditMember(${m.id})">${escapeHtml(m.name)}</span>
-          ${m.team ? `<span class="team-badge" data-team="${m.team}" onclick="openEditMember(${m.id})" style="cursor:pointer;">${m.team}</span>` : ''}
-          <span class="dislike-count ${dislikeCount === 0 ? 'zero' : ''}" onclick="openDislikeModal(${m.id})" title="비선호 식당">${dislikeCount}</span>
-          <button class="remove-btn" onclick="removeMember(${m.id})" title="삭제">&times;</button>
-        </div>
-      `;
-    }).join('');
+
+    const grouped = {};
+    const noTeam = [];
+    members.forEach(m => {
+      if (m.team) (grouped[m.team] ||= []).push(m);
+      else noTeam.push(m);
+    });
+
+    let html = '';
+    teamCategories.forEach(t => {
+      const arr = grouped[t.name];
+      if (!arr || arr.length === 0) return;
+      html += `<div class="member-group-header">${escapeHtml(t.name)}</div>`;
+      html += arr.map(renderMemberItem).join('');
+    });
+    if (noTeam.length > 0) {
+      html += `<div class="member-group-header">미지정</div>`;
+      html += noTeam.map(renderMemberItem).join('');
+    }
+    list.innerHTML = html;
   }
 
   // 비선호 설정 모달
