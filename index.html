@@ -248,15 +248,14 @@
     }
 
     .chip {
-      flex: 1;
-      min-width: 60px;
-      padding: 7px 10px;
+      padding: 4px 12px;
       border: 2px solid #111;
       background: #fff;
       color: #111;
-      border-radius: 18px;
+      border-radius: 14px;
       font-size: 12px;
       font-weight: 700;
+      line-height: 1.4;
       cursor: pointer;
       transition: all 0.15s;
       white-space: nowrap;
@@ -664,25 +663,19 @@
 
     .member-item .member-name.inactive {
       opacity: 0.4;
-      text-decoration: line-through;
     }
 
     .member-item .dislike-count {
-      font-size: 12px;
+      font-size: 13px;
       color: #ff3a8e;
       font-weight: 800;
       flex-shrink: 0;
       cursor: pointer;
-      padding: 2px 7px;
-      border-radius: 8px;
-      background: #ffe9f3;
-      border: 1.5px solid #ff5fa2;
+      padding: 2px 4px;
     }
 
     .member-item .dislike-count.zero {
-      color: #aaa;
-      background: #f5efe6;
-      border-color: #ccc;
+      color: #bbb;
     }
 
     .member-item .remove-btn {
@@ -973,8 +966,8 @@
       <button class="add-member-btn" onclick="openAddMemberModal()">+ 멤버 추가</button>
       <div class="team-filter-chips" id="teamFilterChips"></div>
       <div class="bulk-text-action">
-        <button class="bulk-text-btn" id="selectAllBtn" onclick="handleSelectAllToggle()">모두 선택</button>
         <input type="checkbox" id="selectAllCheckbox" onchange="handleSelectAllCheckbox(event)">
+        <button class="bulk-text-btn" id="selectAllBtn" onclick="handleSelectAllToggle()">모두 선택</button>
       </div>
       <div class="members-list" id="membersList"></div>
     </div>
