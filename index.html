@@ -347,8 +347,18 @@
     .team-filter-chips {
       display: flex;
       gap: 6px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
     }
+
+    .team-filter-chips::-webkit-scrollbar { height: 5px; }
+    .team-filter-chips::-webkit-scrollbar-track { background: transparent; }
+    .team-filter-chips::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+    .team-filter-chips::-webkit-scrollbar-thumb:hover { background: #999; }
+
+    .team-filter-chips .filter-chip { flex-shrink: 0; }
 
     /* 멤버 추가 버튼 */
     .add-member-btn {
