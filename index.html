@@ -251,7 +251,6 @@
     /* 읽기 전용 모드 (잠금 상태) */
     body.readonly .input-row,
     body.readonly .add-restaurant-btn,
-    body.readonly #contentManage > div:last-child,
     body.readonly .clear-history-btn,
     body.readonly .item .remove-btn,
     body.readonly .member-item .remove-btn,
@@ -811,10 +810,6 @@
     <div class="tab-content active" id="contentManage">
       <button class="add-restaurant-btn" onclick="openAddRestaurantModal()">+ 식당 추가</button>
       <div class="items-list" id="itemsList"></div>
-      <div style="display:flex; gap:8px;">
-        <button class="reset-btn" onclick="openImportModal()" style="flex:1; border-color:rgba(95,39,205,0.4); background:rgba(95,39,205,0.1); color:#a29bfe;">📥 가져오기</button>
-        <button class="reset-btn" onclick="resetItems()" style="flex:1;">전체 초기화</button>
-      </div>
     </div>
 
     <div class="tab-content" id="contentMembers">
