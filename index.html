@@ -134,10 +134,18 @@
     .filter-chips {
       display: flex;
       gap: 6px;
-      flex-wrap: wrap;
-      justify-content: center;
+      flex-wrap: nowrap;
+      overflow-x: auto;
       max-width: 420px;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
     }
+
+    .filter-chips::-webkit-scrollbar { height: 4px; }
+    .filter-chips::-webkit-scrollbar-track { background: transparent; }
+    .filter-chips::-webkit-scrollbar-thumb { background: #111; border-radius: 2px; }
+
+    .filter-chip { flex-shrink: 0; }
 
     .filter-chip {
       padding: 6px 12px;
@@ -293,10 +301,12 @@
     .team-badge[data-team="컨텐츠팀"] { background: #fff0c1; color: #a87a00; }
     .team-badge[data-team="플랫폼팀"] { background: #e0d6ff; color: #5a3a99; }
 
-    /* 일괄 선택 텍스트 버튼 */
+    /* 일괄 선택 텍스트 버튼 + 체크박스 */
     .bulk-text-action {
       display: flex;
       justify-content: flex-end;
+      align-items: center;
+      gap: 8px;
       padding: 0 4px;
     }
 
@@ -315,6 +325,13 @@
 
     .bulk-text-btn:hover {
       color: #ff5fa2;
+    }
+
+    .bulk-text-action input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: #ff5fa2;
+      cursor: pointer;
     }
 
     /* 멤버 그룹 헤더 (팀별 정렬) */
@@ -336,8 +353,17 @@
     .team-filter-chips {
       display: flex;
       gap: 6px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: thin;
     }
+
+    .team-filter-chips::-webkit-scrollbar { height: 4px; }
+    .team-filter-chips::-webkit-scrollbar-track { background: transparent; }
+    .team-filter-chips::-webkit-scrollbar-thumb { background: #111; border-radius: 2px; }
+
+    .team-filter-chips .filter-chip { flex-shrink: 0; }
 
     /* 멤버 추가 버튼 */
     .add-member-btn {
@@ -609,10 +635,9 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 9px 12px;
-      background: #fff;
-      border: 1.5px solid #111;
-      border-radius: 10px;
+      padding: 8px 4px;
+      background: transparent;
+      border: none;
       font-size: 14px;
       animation: slideIn 0.25s ease;
     }
@@ -949,6 +974,7 @@
       <div class="team-filter-chips" id="teamFilterChips"></div>
       <div class="bulk-text-action">
         <button class="bulk-text-btn" id="selectAllBtn" onclick="handleSelectAllToggle()">모두 선택</button>
+        <input type="checkbox" id="selectAllCheckbox" onchange="handleSelectAllCheckbox(event)">
       </div>
       <div class="members-list" id="membersList"></div>
     </div>
@@ -1433,10 +1459,6 @@
     const input = document.getElementById('memberInput');
     const name = input.value.trim();
     if (!name) return;
-    if (members.length >= 20) {
-      alert('최대 20명까지 추가할 수 있습니다.');
-      return;
-    }
     const { data, error } = await sb.from('members').insert({
       name,
       team: selectedTeam,
@@ -1490,15 +1512,29 @@
     setAllMembersActive(!allActive);
   }
 
+  function handleSelectAllCheckbox(e) {
+    if (members.length === 0) {
+      e.target.checked = false;
+      return;
+    }
+    setAllMembersActive(e.target.checked);
+  }
+
   function updateBulkText() {
     const btn = document.getElementById('selectAllBtn');
-    if (!btn) return;
+    const cb = document.getElementById('selectAllCheckbox');
+    if (!btn || !cb) return;
     if (members.length === 0) {
       btn.textContent = '모두 선택';
+      cb.checked = false;
+      cb.indeterminate = false;
       return;
     }
     const allActive = members.every(m => activeMembers.includes(m.id));
+    const noneActive = activeMembers.length === 0;
     btn.textContent = allActive ? '모두 해제' : '모두 선택';
+    cb.checked = allActive;
+    cb.indeterminate = !allActive && !noneActive;
   }
 
   async function toggleTeamActive(team) {
