@@ -262,6 +262,36 @@
     .team-badge[data-team="컨텐츠팀"] { background: rgba(254, 202, 87, 0.18); color: #feca57; }
     .team-badge[data-team="플랫폼팀"] { background: rgba(162, 155, 254, 0.18); color: #a29bfe; }
 
+    /* 멤버 일괄 선택 */
+    .bulk-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .bulk-btn {
+      flex: 1;
+      padding: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.7);
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .bulk-btn:hover {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .team-filter-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
     /* 멤버 추가 버튼 */
     .add-member-btn {
       padding: 12px;
@@ -281,6 +311,8 @@
     body.readonly .input-row,
     body.readonly .add-restaurant-btn,
     body.readonly .add-member-btn,
+    body.readonly .bulk-actions,
+    body.readonly .team-filter-chips,
     body.readonly .clear-history-btn,
     body.readonly .item .remove-btn,
     body.readonly .member-item .remove-btn,
@@ -837,6 +869,11 @@
 
     <div class="tab-content" id="contentMembers">
       <button class="add-member-btn" onclick="openAddMemberModal()">+ 멤버 추가</button>
+      <div class="bulk-actions">
+        <button class="bulk-btn" onclick="setAllMembersActive(true)">모두 선택</button>
+        <button class="bulk-btn" onclick="setAllMembersActive(false)">모두 해제</button>
+      </div>
+      <div class="team-filter-chips" id="teamFilterChips"></div>
       <div class="members-list" id="membersList"></div>
     </div>
 
@@ -1363,7 +1400,53 @@
     await sb.from('members').update({ is_active: willBeActive }).eq('id', id).eq('group_slug', currentGroup.slug);
   }
 
+  async function setAllMembersActive(active) {
+    if (members.length === 0) return;
+    const ids = members.map(m => m.id);
+    activeMembers = active ? [...ids] : [];
+    renderMembers();
+    drawWheel();
+    await sb.from('members').update({ is_active: active }).eq('group_slug', currentGroup.slug);
+  }
+
+  async function toggleTeamActive(team) {
+    const teamMembers = members.filter(m => m.team === team);
+    if (teamMembers.length === 0) return;
+    const anyInactive = teamMembers.some(m => !activeMembers.includes(m.id));
+    const newActive = anyInactive;
+
+    teamMembers.forEach(m => {
+      if (newActive) {
+        if (!activeMembers.includes(m.id)) activeMembers.push(m.id);
+      } else {
+        activeMembers = activeMembers.filter(id => id !== m.id);
+      }
+    });
+    renderMembers();
+    drawWheel();
+    const ids = teamMembers.map(m => m.id);
+    await sb.from('members').update({ is_active: newActive }).in('id', ids);
+  }
+
+  function renderTeamFilterChips() {
+    const container = document.getElementById('teamFilterChips');
+    if (!container) return;
+    container.innerHTML = '';
+    teamCategories.forEach(t => {
+      const teamMembers = members.filter(m => m.team === t.name);
+      if (teamMembers.length === 0) return;
+      const allActive = teamMembers.every(m => activeMembers.includes(m.id));
+      const btn = document.createElement('button');
+      btn.className = 'filter-chip';
+      if (allActive) btn.classList.add('active');
+      btn.textContent = `${t.name} (${teamMembers.length})`;
+      btn.onclick = () => toggleTeamActive(t.name);
+      container.appendChild(btn);
+    });
+  }
+
   function renderMembers() {
+    renderTeamFilterChips();
     const list = document.getElementById('membersList');
     if (members.length === 0) {
       list.innerHTML = '<div class="empty-msg">아직 추가된 멤버가 없습니다</div>';
