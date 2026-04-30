@@ -113,6 +113,45 @@
       gap: 20px;
     }
 
+    .group-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: rgba(95, 39, 205, 0.15);
+      border: 1px solid rgba(95, 39, 205, 0.3);
+      border-radius: 12px;
+      font-size: 13px;
+    }
+
+    .group-bar .group-icon {
+      font-size: 16px;
+    }
+
+    .group-bar .group-name {
+      flex: 1;
+      font-weight: 600;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .group-bar .group-action {
+      background: rgba(255, 255, 255, 0.08);
+      border: none;
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .group-bar .group-action:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
     .tabs {
       display: flex;
       background: rgba(255, 255, 255, 0.06);
@@ -629,6 +668,12 @@
   </div>
 
   <div class="panel">
+    <div class="group-bar" id="groupBar" style="display:none;">
+      <span class="group-icon">👥</span>
+      <span class="group-name" id="groupNameDisplay"></span>
+      <button class="group-action" onclick="shareGroup()" title="공유 링크 복사">📋</button>
+      <button class="group-action" onclick="leaveGroup()" title="다른 그룹 선택">🚪</button>
+    </div>
     <div class="tabs">
       <button class="tab active" onclick="switchTab('manage')" id="tabManage">식당 관리</button>
       <button class="tab" onclick="switchTab('members')" id="tabMembers">멤버 관리</button>
@@ -661,6 +706,26 @@
       <div class="history-list" id="historyList"></div>
       <button class="clear-history-btn" onclick="clearHistory()">이력 삭제</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="landingModal">
+  <div class="modal" style="padding:36px 40px; min-width:340px;">
+    <div class="confetti-text">🎰</div>
+    <div class="winner" style="font-size:28px; margin-bottom:8px;">식사 추첨기</div>
+    <div class="label" style="margin-bottom:24px;">그룹을 만들거나 기존 그룹에 참여하세요</div>
+
+    <input type="text" id="newGroupName" placeholder="새 그룹 이름 (예: 우리팀 점심)" maxlength="20"
+           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
+           onkeydown="if(event.key==='Enter' && !event.isComposing) createGroup()">
+    <button class="confirm-btn" onclick="createGroup()" style="width:100%;">+ 새 그룹 만들기</button>
+
+    <div style="margin:20px 0 12px; opacity:0.4; font-size:12px;">또는</div>
+
+    <input type="text" id="joinGroupSlug" placeholder="기존 그룹 코드 (예: abc123)" maxlength="20"
+           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
+           onkeydown="if(event.key==='Enter' && !event.isComposing) joinGroup()">
+    <button class="confirm-btn" onclick="joinGroup()" style="width:100%; background:linear-gradient(135deg, #00d2d3, #54a0ff);">→ 그룹 참여</button>
   </div>
 </div>
 
@@ -720,19 +785,26 @@
   let spinning = false;
   let currentAngle = 0;
   let editingMemberId = null;
+  let currentGroup = null; // { slug, name }
 
   async function loadData() {
-    const [restRes, memRes, dislRes, histRes] = await Promise.all([
-      sb.from('restaurants').select('*').order('id'),
-      sb.from('members').select('*').order('id'),
-      sb.from('member_dislikes').select('*'),
-      sb.from('history').select('*').order('drawn_at', { ascending: false }).limit(100),
+    const slug = currentGroup.slug;
+    const [restRes, memRes, histRes] = await Promise.all([
+      sb.from('restaurants').select('*').eq('group_slug', slug).order('id'),
+      sb.from('members').select('*').eq('group_slug', slug).order('id'),
+      sb.from('history').select('*').eq('group_slug', slug).order('drawn_at', { ascending: false }).limit(100),
     ]);
 
     items = (restRes.data || []).map(r => ({ id: r.id, name: r.name }));
 
+    const memberIds = (memRes.data || []).map(m => m.id);
+    let dislikesData = [];
+    if (memberIds.length > 0) {
+      const { data } = await sb.from('member_dislikes').select('*').in('member_id', memberIds);
+      dislikesData = data || [];
+    }
     const dislikesByMember = {};
-    (dislRes.data || []).forEach(d => {
+    dislikesData.forEach(d => {
       (dislikesByMember[d.member_id] ||= []).push(d.restaurant_id);
     });
     const idToName = Object.fromEntries(items.map(i => [i.id, i.name]));
@@ -893,7 +965,7 @@
     const input = document.getElementById('itemInput');
     const name = input.value.trim();
     if (!name) return;
-    const { data, error } = await sb.from('restaurants').insert({ name }).select().single();
+    const { data, error } = await sb.from('restaurants').insert({ name, group_slug: currentGroup.slug }).select().single();
     if (error) {
       if (error.code === '23505') alert('이미 등록된 식당입니다.');
       else alert('추가 실패: ' + error.message);
@@ -908,7 +980,7 @@
   async function removeItem(index) {
     if (spinning) return;
     const removed = items[index];
-    const { error } = await sb.from('restaurants').delete().eq('id', removed.id);
+    const { error } = await sb.from('restaurants').delete().eq('id', removed.id).eq('group_slug', currentGroup.slug);
     if (error) { alert('삭제 실패: ' + error.message); return; }
     items.splice(index, 1);
     members.forEach(m => {
@@ -920,8 +992,8 @@
   async function resetItems() {
     if (spinning) return;
     if (items.length === 0) return;
-    if (!confirm('모든 항목을 초기화하시겠습니까?')) return;
-    const { error } = await sb.from('restaurants').delete().neq('id', 0);
+    if (!confirm('이 그룹의 모든 식당을 초기화하시겠습니까?')) return;
+    const { error } = await sb.from('restaurants').delete().eq('group_slug', currentGroup.slug);
     if (error) { alert('초기화 실패: ' + error.message); return; }
     items = [];
     currentAngle = 0;
@@ -938,7 +1010,7 @@
       alert('최대 20명까지 추가할 수 있습니다.');
       return;
     }
-    const { data, error } = await sb.from('members').insert({ name, is_active: true }).select().single();
+    const { data, error } = await sb.from('members').insert({ name, is_active: true, group_slug: currentGroup.slug }).select().single();
     if (error) {
       if (error.code === '23505') alert('이미 등록된 멤버입니다.');
       else alert('추가 실패: ' + error.message);
@@ -953,7 +1025,7 @@
   }
 
   async function removeMember(id) {
-    const { error } = await sb.from('members').delete().eq('id', id);
+    const { error } = await sb.from('members').delete().eq('id', id).eq('group_slug', currentGroup.slug);
     if (error) { alert('삭제 실패: ' + error.message); return; }
     members = members.filter(m => m.id !== id);
     activeMembers = activeMembers.filter(mid => mid !== id);
@@ -967,7 +1039,7 @@
     else activeMembers = activeMembers.filter(mid => mid !== id);
     renderMembers();
     drawWheel();
-    await sb.from('members').update({ is_active: willBeActive }).eq('id', id);
+    await sb.from('members').update({ is_active: willBeActive }).eq('id', id).eq('group_slug', currentGroup.slug);
   }
 
   function renderMembers() {
@@ -1107,11 +1179,13 @@
     if (!confirm(`로컬 데이터를 Supabase로 이전합니다.\n식당 ${legacyItems.length}개, 멤버 ${legacyMembers.length}명, 이력 ${legacyHistory.length}건\n계속하시겠습니까?`)) return;
 
     try {
+      const slug = currentGroup.slug;
+
       // 1. 식당 추가 (이름 중복 무시)
       const restaurantMap = Object.fromEntries(items.map(i => [i.name, i.id]));
       for (const name of legacyItems) {
         if (restaurantMap[name]) continue;
-        const { data, error } = await sb.from('restaurants').insert({ name }).select().single();
+        const { data, error } = await sb.from('restaurants').insert({ name, group_slug: slug }).select().single();
         if (!error && data) {
           restaurantMap[name] = data.id;
         }
@@ -1122,7 +1196,7 @@
         let memberId = members.find(em => em.name === m.name)?.id;
         if (!memberId) {
           const isActive = legacyActive.includes(m.id);
-          const { data, error } = await sb.from('members').insert({ name: m.name, is_active: isActive }).select().single();
+          const { data, error } = await sb.from('members').insert({ name: m.name, is_active: isActive, group_slug: slug }).select().single();
           if (error) continue;
           memberId = data.id;
         }
@@ -1143,6 +1217,7 @@
         await sb.from('history').insert({
           restaurant_name: h.name,
           active_members: [],
+          group_slug: slug,
         });
       }
 
@@ -1180,7 +1255,7 @@
       return;
     }
 
-    const rows = newNames.map(name => ({ name }));
+    const rows = newNames.map(name => ({ name, group_slug: currentGroup.slug }));
     const { data, error } = await sb.from('restaurants').insert(rows).select();
     if (error) {
       alert('추가 실패: ' + error.message);
@@ -1290,6 +1365,7 @@
     sb.from('history').insert({
       restaurant_name: name,
       active_members: activeMemberNames,
+      group_slug: currentGroup.slug,
     }).then(() => {});
 
     const now = new Date();
@@ -1330,8 +1406,8 @@
 
   async function clearHistory() {
     if (history.length === 0) return;
-    if (!confirm('모든 당첨 이력을 삭제하시겠습니까?')) return;
-    const { error } = await sb.from('history').delete().neq('id', 0);
+    if (!confirm('이 그룹의 모든 당첨 이력을 삭제하시겠습니까?')) return;
+    const { error } = await sb.from('history').delete().eq('group_slug', currentGroup.slug);
     if (error) { alert('삭제 실패: ' + error.message); return; }
     history = [];
     renderHistory();
@@ -1360,8 +1436,27 @@
     }
   }
 
-  // 초기 로드
-  (async () => {
+  // 그룹 관리
+  async function init() {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('g');
+
+    if (!slug) {
+      showLanding();
+      return;
+    }
+
+    const { data, error } = await sb.from('groups').select('*').eq('slug', slug).maybeSingle();
+    if (error || !data) {
+      alert('그룹을 찾을 수 없습니다.\n새 그룹을 만들거나 다른 코드를 입력해주세요.');
+      showLanding();
+      return;
+    }
+
+    currentGroup = { slug: data.slug, name: data.name };
+    document.getElementById('groupNameDisplay').textContent = data.name + ' (' + data.slug + ')';
+    document.getElementById('groupBar').style.display = 'flex';
+
     try {
       await loadData();
     } catch (e) {
@@ -1370,7 +1465,63 @@
     }
     renderItems();
     renderMembers();
-  })();
+  }
+
+  function showLanding() {
+    document.getElementById('landingModal').classList.add('show');
+  }
+
+  function generateSlug() {
+    return Math.random().toString(36).slice(2, 8);
+  }
+
+  async function createGroup() {
+    const name = document.getElementById('newGroupName').value.trim();
+    if (!name) { alert('그룹 이름을 입력해주세요.'); return; }
+
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const slug = generateSlug();
+      const { error } = await sb.from('groups').insert({ slug, name });
+      if (!error) {
+        window.location.search = '?g=' + slug;
+        return;
+      }
+      if (error.code !== '23505') {
+        alert('생성 실패: ' + error.message);
+        return;
+      }
+    }
+    alert('생성 실패. 다시 시도해주세요.');
+  }
+
+  async function joinGroup() {
+    const raw = document.getElementById('joinGroupSlug').value.trim().toLowerCase();
+    if (!raw) { alert('그룹 코드를 입력해주세요.'); return; }
+    const slug = raw.replace(/[^a-z0-9]/g, '');
+    const { data, error } = await sb.from('groups').select('slug').eq('slug', slug).maybeSingle();
+    if (error || !data) {
+      alert('해당 코드의 그룹이 없습니다.');
+      return;
+    }
+    window.location.search = '?g=' + slug;
+  }
+
+  async function shareGroup() {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      alert('공유 링크가 복사되었습니다!\n' + url);
+    } catch {
+      prompt('아래 링크를 복사하세요:', url);
+    }
+  }
+
+  function leaveGroup() {
+    if (!confirm('다른 그룹을 선택하시겠습니까?')) return;
+    window.location.href = window.location.pathname;
+  }
+
+  init();
 </script>
 
 </body>
