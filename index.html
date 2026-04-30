@@ -692,8 +692,9 @@
     <div class="group-bar" id="groupBar" style="display:none;">
       <span class="group-icon" id="groupIcon">👥</span>
       <span class="group-name" id="groupNameDisplay"></span>
-      <button class="group-action" id="lockBtn" onclick="toggleLock()" title="편집 잠금/해제" style="display:none;">🔒</button>
-      <button class="group-action" onclick="shareGroup()" title="공유 링크 복사">📋</button>
+      <button class="group-action" id="lockBtn" onclick="toggleLock()" title="편집 권한" style="display:none;">🔒</button>
+      <button class="group-action" id="shareEditBtn" onclick="shareEditLink()" title="편집 링크 복사 (그룹장 권한 부여)" style="display:none;">🔑</button>
+      <button class="group-action" onclick="shareGroup()" title="공유 링크 복사 (보기)">📋</button>
       <button class="group-action" onclick="leaveGroup()" title="다른 그룹 선택">🚪</button>
     </div>
     <div class="tabs">
@@ -738,11 +739,9 @@
     <div class="label" style="margin-bottom:24px;">그룹을 만들거나 기존 그룹에 참여하세요</div>
 
     <input type="text" id="newGroupName" placeholder="새 그룹 이름 (예: 우리팀 점심)" maxlength="20"
-           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;">
-    <input type="password" id="newGroupPassword" placeholder="편집 비밀번호 (선택, 비우면 누구나 편집 가능)" maxlength="50"
            style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) createGroup()">
-    <button class="confirm-btn" onclick="createGroup()" style="width:100%;">+ 새 그룹 만들기</button>
+    <button class="confirm-btn" onclick="createGroup()" style="width:100%;">+ 새 그룹 만들기 (그룹장)</button>
 
     <div style="margin:20px 0 12px; opacity:0.4; font-size:12px;">또는</div>
 
@@ -1464,22 +1463,34 @@
   async function init() {
     const params = new URLSearchParams(window.location.search);
     const slug = params.get('g');
+    const incomingKey = params.get('k');
 
     if (!slug) {
       showLanding();
       return;
     }
 
-    const { data, error } = await sb.from('groups').select('slug, name, edit_password_hash').eq('slug', slug).maybeSingle();
+    // 편집 링크로 들어왔다면 토큰 검증 후 localStorage에 저장
+    if (incomingKey) {
+      const { data: ok } = await sb.rpc('verify_owner', { p_slug: slug, p_token: incomingKey });
+      if (ok) {
+        localStorage.setItem('owner_' + slug, incomingKey);
+      }
+      // URL 정리
+      history.replaceState(null, '', window.location.pathname + '?g=' + slug);
+    }
+
+    const { data, error } = await sb.from('groups').select('slug, name, owner_token_hash').eq('slug', slug).maybeSingle();
     if (error || !data) {
       alert('그룹을 찾을 수 없습니다.\n새 그룹을 만들거나 다른 코드를 입력해주세요.');
       showLanding();
       return;
     }
 
-    const hasPassword = data.edit_password_hash !== null;
-    const isUnlocked = !hasPassword || localStorage.getItem('unlock_' + slug) === '1';
-    currentGroup = { slug: data.slug, name: data.name, hasPassword, isUnlocked };
+    const hasOwnerLock = data.owner_token_hash !== null;
+    const storedToken = localStorage.getItem('owner_' + slug);
+    const isOwner = !hasOwnerLock || !!storedToken;
+    currentGroup = { slug: data.slug, name: data.name, hasOwnerLock, isOwner, token: storedToken };
 
     document.getElementById('groupNameDisplay').textContent = data.name + ' (' + data.slug + ')';
     document.getElementById('groupBar').style.display = 'flex';
@@ -1498,44 +1509,87 @@
 
   function updateLockUI() {
     const lockBtn = document.getElementById('lockBtn');
-    if (!currentGroup.hasPassword) {
+    const shareEditBtn = document.getElementById('shareEditBtn');
+    const groupIcon = document.getElementById('groupIcon');
+
+    if (!currentGroup.hasOwnerLock) {
+      // 그룹장 락 없음 (legacy) - 누구나 편집
       lockBtn.style.display = 'none';
+      shareEditBtn.style.display = 'none';
+      groupIcon.textContent = '👥';
+      return;
+    }
+
+    lockBtn.style.display = '';
+    if (currentGroup.isOwner) {
+      lockBtn.textContent = '👑';
+      lockBtn.title = '그룹장 (편집 가능) - 클릭 시 키 백업';
+      groupIcon.textContent = '👑';
+      shareEditBtn.style.display = '';
     } else {
-      lockBtn.style.display = '';
-      lockBtn.textContent = currentGroup.isUnlocked ? '🔓' : '🔒';
-      lockBtn.title = currentGroup.isUnlocked ? '편집 잠그기' : '편집 잠금 해제';
+      lockBtn.textContent = '🔒';
+      lockBtn.title = '읽기 전용 - 클릭 시 그룹장 키로 잠금 해제';
+      groupIcon.textContent = '👁';
+      shareEditBtn.style.display = 'none';
     }
   }
 
   function applyEditMode() {
-    document.body.classList.toggle('readonly', !currentGroup.isUnlocked);
+    document.body.classList.toggle('readonly', !currentGroup.isOwner);
   }
 
   async function toggleLock() {
-    if (!currentGroup.hasPassword) return;
+    if (!currentGroup.hasOwnerLock) return;
 
-    if (currentGroup.isUnlocked) {
-      localStorage.removeItem('unlock_' + currentGroup.slug);
-      currentGroup.isUnlocked = false;
-      updateLockUI();
-      applyEditMode();
+    if (currentGroup.isOwner) {
+      // 키 백업 안내
+      const token = currentGroup.token;
+      if (!token) {
+        alert('이 브라우저에 그룹장 키가 없습니다. 다시 잠금 해제해주세요.');
+        return;
+      }
+      const editLink = window.location.origin + window.location.pathname + '?g=' + currentGroup.slug + '&k=' + token;
+      const ok = confirm('그룹장 키 (분실 시 권한 회복 불가):\n\n' + token + '\n\n확인을 누르면 편집 링크가 클립보드에 복사됩니다.');
+      if (ok) {
+        try {
+          await navigator.clipboard.writeText(editLink);
+          alert('편집 링크 복사됨:\n' + editLink);
+        } catch {
+          prompt('아래 편집 링크를 복사하세요:', editLink);
+        }
+      }
       return;
     }
 
-    const password = prompt('편집 비밀번호를 입력하세요:');
-    if (password === null || password === '') return;
-    const { data: ok, error } = await sb.rpc('verify_group_password', {
+    // 비-그룹장: 키 입력 받아 잠금 해제
+    const token = prompt('그룹장 키를 입력하세요:');
+    if (token === null || token.trim() === '') return;
+    const trimmed = token.trim();
+    const { data: ok, error } = await sb.rpc('verify_owner', {
       p_slug: currentGroup.slug,
-      p_password: password,
+      p_token: trimmed,
     });
     if (error) { alert('확인 실패: ' + error.message); return; }
     if (ok) {
-      localStorage.setItem('unlock_' + currentGroup.slug, '1');
-      currentGroup.isUnlocked = true;
+      localStorage.setItem('owner_' + currentGroup.slug, trimmed);
+      currentGroup.isOwner = true;
+      currentGroup.token = trimmed;
       updateLockUI();
       applyEditMode();
+      alert('편집 권한이 활성화되었습니다.');
     } else {
-      alert('비밀번호가 틀렸습니다.');
+      alert('키가 틀렸습니다.');
+    }
+  }
+
+  async function shareEditLink() {
+    if (!currentGroup.isOwner || !currentGroup.token) return;
+    const editLink = window.location.origin + window.location.pathname + '?g=' + currentGroup.slug + '&k=' + currentGroup.token;
+    try {
+      await navigator.clipboard.writeText(editLink);
+      alert('⚠️ 편집 링크가 복사되었습니다.\n이 링크를 받은 사람은 편집 권한을 얻습니다.\n\n' + editLink);
+    } catch {
+      prompt('아래 편집 링크를 복사하세요 (받는 사람이 편집 권한 획득):', editLink);
     }
   }
 
@@ -1549,22 +1603,22 @@
 
   async function createGroup() {
     const name = document.getElementById('newGroupName').value.trim();
-    const password = document.getElementById('newGroupPassword').value;
     if (!name) { alert('그룹 이름을 입력해주세요.'); return; }
 
     for (let attempt = 0; attempt < 5; attempt++) {
       const slug = generateSlug();
-      const { error } = await sb.rpc('create_group_with_password', {
+      const { data, error } = await sb.rpc('create_group_as_owner', {
         p_slug: slug,
         p_name: name,
-        p_password: password || null,
       });
-      if (!error) {
-        if (password) localStorage.setItem('unlock_' + slug, '1');
+      if (!error && data && data.length > 0) {
+        const token = data[0].out_token;
+        localStorage.setItem('owner_' + slug, token);
+        alert('그룹이 생성되었습니다!\n\n그룹장 키 (분실 시 권한 회복 불가):\n' + token + '\n\n안전한 곳에 백업해두세요.\n다른 사람과 편집 권한을 공유하려면 그룹 바의 🔑 버튼을 사용하세요.');
         window.location.search = '?g=' + slug;
         return;
       }
-      if (error.code !== '23505' && !String(error.message).includes('duplicate')) {
+      if (error && error.code !== '23505' && !String(error.message).includes('duplicate')) {
         alert('생성 실패: ' + error.message);
         return;
       }
