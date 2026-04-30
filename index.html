@@ -810,14 +810,7 @@
       <div class="pointer" id="pointer"></div>
       <canvas id="wheel" width="840" height="840"></canvas>
     </div>
-    <div class="filter-chips" id="filterChips">
-      <button class="filter-chip" data-cat="한식" onclick="toggleCategoryFilter('한식')">🍚 한식</button>
-      <button class="filter-chip" data-cat="중식" onclick="toggleCategoryFilter('중식')">🥟 중식</button>
-      <button class="filter-chip" data-cat="일식" onclick="toggleCategoryFilter('일식')">🍣 일식</button>
-      <button class="filter-chip" data-cat="양식" onclick="toggleCategoryFilter('양식')">🍝 양식</button>
-      <button class="filter-chip" data-cat="분식" onclick="toggleCategoryFilter('분식')">🍢 분식</button>
-      <button class="filter-chip" data-cat="기타" onclick="toggleCategoryFilter('기타')">🍽️ 기타</button>
-    </div>
+    <div class="filter-chips" id="filterChips"></div>
     <button class="spin-btn" id="spinBtn" onclick="spin()">추첨하기</button>
     <div class="excluded-info" id="excludedInfo"></div>
   </div>
@@ -890,14 +883,7 @@
            style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:15px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) saveEditRestaurant()">
     <div class="member-label">카테고리</div>
-    <div class="category-chips" id="editCategoryChips">
-      <button class="chip" data-cat="한식" onclick="selectEditCategory('한식')">🍚 한식</button>
-      <button class="chip" data-cat="중식" onclick="selectEditCategory('중식')">🥟 중식</button>
-      <button class="chip" data-cat="일식" onclick="selectEditCategory('일식')">🍣 일식</button>
-      <button class="chip" data-cat="양식" onclick="selectEditCategory('양식')">🍝 양식</button>
-      <button class="chip" data-cat="분식" onclick="selectEditCategory('분식')">🍢 분식</button>
-      <button class="chip" data-cat="기타" onclick="selectEditCategory('기타')">🍽️ 기타</button>
-    </div>
+    <div class="category-chips" id="editCategoryChips"></div>
     <button class="confirm-btn" onclick="saveEditRestaurant()">저장</button>
   </div>
 </div>
@@ -909,12 +895,7 @@
            style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:15px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) saveEditMember()">
     <div class="member-label">팀</div>
-    <div class="category-chips" id="editTeamChips">
-      <button class="chip" data-team="기획팀" onclick="selectEditTeam('기획팀')">📋 기획팀</button>
-      <button class="chip" data-team="제작팀" onclick="selectEditTeam('제작팀')">🛠 제작팀</button>
-      <button class="chip" data-team="컨텐츠팀" onclick="selectEditTeam('컨텐츠팀')">🎨 컨텐츠팀</button>
-      <button class="chip" data-team="플랫폼팀" onclick="selectEditTeam('플랫폼팀')">⚙ 플랫폼팀</button>
-    </div>
+    <div class="category-chips" id="editTeamChips"></div>
     <button class="confirm-btn" style="background:linear-gradient(135deg, #ff6b6b, #ff4757);" onclick="openDislikeFromEdit()">비선호 식당 설정</button>
     <button class="confirm-btn" onclick="saveEditMember()">저장</button>
   </div>
@@ -927,12 +908,7 @@
            style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:15px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) addMember()">
     <div class="member-label">팀 (선택)</div>
-    <div class="category-chips" id="teamChips">
-      <button class="chip" data-team="기획팀" onclick="selectTeam('기획팀')">📋 기획팀</button>
-      <button class="chip" data-team="제작팀" onclick="selectTeam('제작팀')">🛠 제작팀</button>
-      <button class="chip" data-team="컨텐츠팀" onclick="selectTeam('컨텐츠팀')">🎨 컨텐츠팀</button>
-      <button class="chip" data-team="플랫폼팀" onclick="selectTeam('플랫폼팀')">⚙ 플랫폼팀</button>
-    </div>
+    <div class="category-chips" id="teamChips"></div>
     <button class="confirm-btn" onclick="addMember()">추가</button>
   </div>
 </div>
@@ -944,14 +920,7 @@
            style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:15px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) addItem()">
     <div class="member-label">카테고리 (선택)</div>
-    <div class="category-chips" id="categoryChips">
-      <button class="chip" data-cat="한식" onclick="selectCategory('한식')">🍚 한식</button>
-      <button class="chip" data-cat="중식" onclick="selectCategory('중식')">🥟 중식</button>
-      <button class="chip" data-cat="일식" onclick="selectCategory('일식')">🍣 일식</button>
-      <button class="chip" data-cat="양식" onclick="selectCategory('양식')">🍝 양식</button>
-      <button class="chip" data-cat="분식" onclick="selectCategory('분식')">🍢 분식</button>
-      <button class="chip" data-cat="기타" onclick="selectCategory('기타')">🍽️ 기타</button>
-    </div>
+    <div class="category-chips" id="categoryChips"></div>
     <button class="confirm-btn" onclick="addItem()">추가</button>
   </div>
 </div>
@@ -1007,6 +976,65 @@
   let selectedCategory = null;
   let selectedTeam = null;
   let categoryFilter = new Set();
+  let restaurantCategories = [];
+  let teamCategories = [];
+
+  function renderChips(containerId, cats, onSelect, isFilter) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    cats.forEach(c => {
+      const btn = document.createElement('button');
+      btn.className = isFilter ? 'filter-chip' : 'chip';
+      btn.dataset.cat = c.name;
+      btn.dataset.team = c.name;
+      btn.textContent = `${c.emoji} ${c.name}`;
+      btn.onclick = () => onSelect(c.name);
+      if (isFilter && categoryFilter.has(c.name)) btn.classList.add('active');
+      container.appendChild(btn);
+    });
+    // 그룹장만 카테고리 추가 가능 (필터 칩 그룹은 추가 버튼 없음)
+    if (!isFilter && currentGroup && currentGroup.isOwner) {
+      const addBtn = document.createElement('button');
+      addBtn.className = 'chip';
+      addBtn.style.borderStyle = 'dashed';
+      addBtn.style.opacity = '0.7';
+      addBtn.textContent = '+ 추가';
+      const isTeam = containerId.includes('team') || containerId.includes('Team');
+      addBtn.onclick = () => addNewCategory(isTeam ? 'team' : 'restaurant');
+      container.appendChild(addBtn);
+    }
+  }
+
+  function renderAllChips() {
+    renderChips('categoryChips', restaurantCategories, selectCategory, false);
+    renderChips('editCategoryChips', restaurantCategories, selectEditCategory, false);
+    renderChips('teamChips', teamCategories, selectTeam, false);
+    renderChips('editTeamChips', teamCategories, selectEditTeam, false);
+    renderChips('filterChips', restaurantCategories, toggleCategoryFilter, true);
+  }
+
+  async function addNewCategory(type) {
+    const name = (prompt(type === 'team' ? '새 팀 이름:' : '새 카테고리 이름:') || '').trim();
+    if (!name) return;
+    const emoji = (prompt('이모지 (선택, 기본: 🏷️):') || '🏷️').trim();
+
+    const cats = type === 'team' ? teamCategories : restaurantCategories;
+    if (cats.some(c => c.name === name)) {
+      alert('이미 존재하는 카테고리입니다.');
+      return;
+    }
+
+    const newCats = [...cats, { name, emoji }];
+    const updateField = type === 'team' ? 'team_categories' : 'restaurant_categories';
+    const { error } = await sb.from('groups').update({ [updateField]: newCats }).eq('slug', currentGroup.slug);
+    if (error) { alert('추가 실패: ' + error.message); return; }
+
+    if (type === 'team') teamCategories = newCats;
+    else restaurantCategories = newCats;
+
+    renderAllChips();
+  }
 
   function selectCategory(cat) {
     selectedCategory = (selectedCategory === cat) ? null : cat;
@@ -1872,7 +1900,7 @@
       history.replaceState(null, '', window.location.pathname + '?g=' + slug);
     }
 
-    const { data, error } = await sb.from('groups').select('slug, name, owner_token_hash').eq('slug', slug).maybeSingle();
+    const { data, error } = await sb.from('groups').select('slug, name, owner_token_hash, restaurant_categories, team_categories').eq('slug', slug).maybeSingle();
     if (error || !data) {
       alert('그룹을 찾을 수 없습니다.\n새 그룹을 만들거나 다른 코드를 입력해주세요.');
       showLanding();
@@ -1884,10 +1912,14 @@
     const isOwner = !hasOwnerLock || !!storedToken;
     currentGroup = { slug: data.slug, name: data.name, hasOwnerLock, isOwner, token: storedToken };
 
+    restaurantCategories = data.restaurant_categories || [];
+    teamCategories = data.team_categories || [];
+
     document.getElementById('groupNameDisplay').textContent = data.name + ' (' + data.slug + ')';
     document.getElementById('groupBar').style.display = 'flex';
     updateLockUI();
     applyEditMode();
+    renderAllChips();
 
     try {
       await loadData();
