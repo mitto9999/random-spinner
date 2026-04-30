@@ -152,8 +152,56 @@
       background: rgba(255, 255, 255, 0.18);
     }
 
+    /* 카테고리 칩 */
+    .category-chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .chip {
+      flex: 1;
+      min-width: 64px;
+      padding: 7px 10px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.6);
+      border-radius: 18px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .chip:hover {
+      border-color: rgba(255,255,255,0.3);
+      color: #fff;
+    }
+
+    .chip.active {
+      background: linear-gradient(135deg, #5f27cd, #7c3aed);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .category-badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.6);
+    }
+
+    .category-badge[data-cat="한식"] { background: rgba(29, 209, 161, 0.18); color: #1dd1a1; }
+    .category-badge[data-cat="중식"] { background: rgba(255, 71, 87, 0.18); color: #ff6b6b; }
+    .category-badge[data-cat="일식"] { background: rgba(254, 202, 87, 0.18); color: #feca57; }
+    .category-badge[data-cat="양식"] { background: rgba(84, 160, 255, 0.18); color: #54a0ff; }
+
     /* 읽기 전용 모드 (잠금 상태) */
     body.readonly .input-row,
+    body.readonly .category-chips,
     body.readonly #contentManage > div:last-child,
     body.readonly .clear-history-btn,
     body.readonly .item .remove-btn,
@@ -709,6 +757,12 @@
                onkeydown="if(event.key==='Enter' && !event.isComposing) addItem()">
         <button class="add-btn" onclick="addItem()">추가</button>
       </div>
+      <div class="category-chips" id="categoryChips">
+        <button class="chip" data-cat="한식" onclick="selectCategory('한식')">🍚 한식</button>
+        <button class="chip" data-cat="중식" onclick="selectCategory('중식')">🥟 중식</button>
+        <button class="chip" data-cat="일식" onclick="selectCategory('일식')">🍣 일식</button>
+        <button class="chip" data-cat="양식" onclick="selectCategory('양식')">🍝 양식</button>
+      </div>
       <div class="items-list" id="itemsList"></div>
       <div style="display:flex; gap:8px;">
         <button class="reset-btn" onclick="openImportModal()" style="flex:1; border-color:rgba(95,39,205,0.4); background:rgba(95,39,205,0.1); color:#a29bfe;">📥 가져오기</button>
@@ -809,6 +863,14 @@
   let currentAngle = 0;
   let editingMemberId = null;
   let currentGroup = null; // { slug, name }
+  let selectedCategory = null;
+
+  function selectCategory(cat) {
+    selectedCategory = (selectedCategory === cat) ? null : cat;
+    document.querySelectorAll('#categoryChips .chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.cat === selectedCategory);
+    });
+  }
 
   async function loadData() {
     const slug = currentGroup.slug;
@@ -818,7 +880,7 @@
       sb.from('history').select('*').eq('group_slug', slug).order('drawn_at', { ascending: false }).limit(100),
     ]);
 
-    items = (restRes.data || []).map(r => ({ id: r.id, name: r.name }));
+    items = (restRes.data || []).map(r => ({ id: r.id, name: r.name, category: r.category }));
 
     const memberIds = (memRes.data || []).map(m => m.id);
     let dislikesData = [];
@@ -971,6 +1033,7 @@
         <div class="item">
           <span class="color-dot" style="background:${COLORS[i % COLORS.length]}"></span>
           <span class="name">${escapeHtml(item.name)}</span>
+          ${item.category ? `<span class="category-badge" data-cat="${item.category}">${item.category}</span>` : ''}
           <button class="remove-btn" onclick="removeItem(${i})" title="삭제">&times;</button>
         </div>
       `).join('');
@@ -988,15 +1051,21 @@
     const input = document.getElementById('itemInput');
     const name = input.value.trim();
     if (!name) return;
-    const { data, error } = await sb.from('restaurants').insert({ name, group_slug: currentGroup.slug }).select().single();
+    const { data, error } = await sb.from('restaurants').insert({
+      name,
+      category: selectedCategory,
+      group_slug: currentGroup.slug,
+    }).select().single();
     if (error) {
       if (error.code === '23505') alert('이미 등록된 식당입니다.');
       else alert('추가 실패: ' + error.message);
       return;
     }
-    items.push({ id: data.id, name: data.name });
+    items.push({ id: data.id, name: data.name, category: data.category });
     input.value = '';
     input.focus();
+    selectedCategory = null;
+    document.querySelectorAll('#categoryChips .chip').forEach(c => c.classList.remove('active'));
     renderItems();
   }
 
