@@ -137,26 +137,24 @@
       flex-wrap: nowrap;
       overflow-x: auto;
       max-width: 420px;
-      padding-bottom: 4px;
-      scrollbar-width: thin;
+      scrollbar-width: none;
     }
 
-    .filter-chips::-webkit-scrollbar { height: 4px; }
-    .filter-chips::-webkit-scrollbar-track { background: transparent; }
-    .filter-chips::-webkit-scrollbar-thumb { background: #111; border-radius: 2px; }
-
-    .filter-chip { flex-shrink: 0; }
+    .filter-chips::-webkit-scrollbar { display: none; }
 
     .filter-chip {
-      padding: 6px 12px;
+      padding: 4px 12px;
       border: 2px solid #111;
       background: #fff;
       color: #111;
-      border-radius: 16px;
+      border-radius: 14px;
       font-size: 12px;
       font-weight: 700;
+      line-height: 1.4;
       cursor: pointer;
       transition: all 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .filter-chip:hover {
@@ -354,15 +352,10 @@
       gap: 6px;
       flex-wrap: nowrap;
       overflow-x: auto;
-      padding-bottom: 4px;
-      scrollbar-width: thin;
+      scrollbar-width: none;
     }
 
-    .team-filter-chips::-webkit-scrollbar { height: 4px; }
-    .team-filter-chips::-webkit-scrollbar-track { background: transparent; }
-    .team-filter-chips::-webkit-scrollbar-thumb { background: #111; border-radius: 2px; }
-
-    .team-filter-chips .filter-chip { flex-shrink: 0; }
+    .team-filter-chips::-webkit-scrollbar { display: none; }
 
     /* 멤버 추가 버튼 */
     .add-member-btn {
