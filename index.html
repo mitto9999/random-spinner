@@ -248,9 +248,39 @@
     .category-badge[data-cat="분식"] { background: rgba(255, 159, 243, 0.18); color: #ff9ff3; }
     .category-badge[data-cat="기타"] { background: rgba(162, 155, 254, 0.18); color: #a29bfe; }
 
+    .team-badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 600;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.6);
+    }
+
+    .team-badge[data-team="기획팀"] { background: rgba(84, 160, 255, 0.18); color: #54a0ff; }
+    .team-badge[data-team="제작팀"] { background: rgba(29, 209, 161, 0.18); color: #1dd1a1; }
+    .team-badge[data-team="컨텐츠팀"] { background: rgba(254, 202, 87, 0.18); color: #feca57; }
+    .team-badge[data-team="플랫폼팀"] { background: rgba(162, 155, 254, 0.18); color: #a29bfe; }
+
+    /* 멤버 추가 버튼 */
+    .add-member-btn {
+      padding: 12px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #1dd1a1, #00cec9);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .add-member-btn:hover { opacity: 0.85; }
+
     /* 읽기 전용 모드 (잠금 상태) */
     body.readonly .input-row,
     body.readonly .add-restaurant-btn,
+    body.readonly .add-member-btn,
     body.readonly .clear-history-btn,
     body.readonly .item .remove-btn,
     body.readonly .member-item .remove-btn,
@@ -813,11 +843,7 @@
     </div>
 
     <div class="tab-content" id="contentMembers">
-      <div class="input-row">
-        <input type="text" id="memberInput" placeholder="멤버 이름 입력..." maxlength="10"
-               onkeydown="if(event.key==='Enter' && !event.isComposing) addMember()">
-        <button class="add-btn" onclick="addMember()">추가</button>
-      </div>
+      <button class="add-member-btn" onclick="openAddMemberModal()">+ 멤버 추가</button>
       <div class="members-list" id="membersList"></div>
     </div>
 
@@ -854,6 +880,23 @@
     <div class="label">당첨 결과</div>
     <div class="winner" id="winnerName"></div>
     <button class="close-btn" onclick="document.getElementById('modal').classList.remove('show')">확인</button>
+  </div>
+</div>
+
+<div class="dislike-modal-overlay" id="addMemberModal" onclick="closeAddMemberModal(event)">
+  <div class="dislike-modal" style="width: 320px;">
+    <h3>멤버 추가</h3>
+    <input type="text" id="memberInput" placeholder="멤버 이름 입력..." maxlength="10"
+           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:15px; outline:none; box-sizing:border-box;"
+           onkeydown="if(event.key==='Enter' && !event.isComposing) addMember()">
+    <div class="member-label">팀 (선택)</div>
+    <div class="category-chips" id="teamChips">
+      <button class="chip" data-team="기획팀" onclick="selectTeam('기획팀')">📋 기획팀</button>
+      <button class="chip" data-team="제작팀" onclick="selectTeam('제작팀')">🛠 제작팀</button>
+      <button class="chip" data-team="컨텐츠팀" onclick="selectTeam('컨텐츠팀')">🎨 컨텐츠팀</button>
+      <button class="chip" data-team="플랫폼팀" onclick="selectTeam('플랫폼팀')">⚙ 플랫폼팀</button>
+    </div>
+    <button class="confirm-btn" onclick="addMember()">추가</button>
   </div>
 </div>
 
@@ -925,12 +968,20 @@
   let editingMemberId = null;
   let currentGroup = null; // { slug, name }
   let selectedCategory = null;
+  let selectedTeam = null;
   let categoryFilter = new Set();
 
   function selectCategory(cat) {
     selectedCategory = (selectedCategory === cat) ? null : cat;
     document.querySelectorAll('#categoryChips .chip').forEach(c => {
       c.classList.toggle('active', c.dataset.cat === selectedCategory);
+    });
+  }
+
+  function selectTeam(team) {
+    selectedTeam = (selectedTeam === team) ? null : team;
+    document.querySelectorAll('#teamChips .chip').forEach(c => {
+      c.classList.toggle('active', c.dataset.team === selectedTeam);
     });
   }
 
@@ -967,6 +1018,7 @@
     members = (memRes.data || []).map(m => ({
       id: m.id,
       name: m.name,
+      team: m.team,
       dislikes: (dislikesByMember[m.id] || []).map(rid => idToName[rid]).filter(Boolean),
     }));
     activeMembers = (memRes.data || []).filter(m => m.is_active).map(m => m.id);
@@ -1184,6 +1236,21 @@
   }
 
   // 멤버 관리
+  function openAddMemberModal() {
+    selectedTeam = null;
+    document.querySelectorAll('#teamChips .chip').forEach(c => c.classList.remove('active'));
+    const input = document.getElementById('memberInput');
+    input.value = '';
+    document.getElementById('addMemberModal').classList.add('show');
+    setTimeout(() => input.focus(), 50);
+  }
+
+  function closeAddMemberModal(e) {
+    if (!e || e.target === e.currentTarget) {
+      document.getElementById('addMemberModal').classList.remove('show');
+    }
+  }
+
   async function addMember() {
     const input = document.getElementById('memberInput');
     const name = input.value.trim();
@@ -1192,18 +1259,25 @@
       alert('최대 20명까지 추가할 수 있습니다.');
       return;
     }
-    const { data, error } = await sb.from('members').insert({ name, is_active: true, group_slug: currentGroup.slug }).select().single();
+    const { data, error } = await sb.from('members').insert({
+      name,
+      team: selectedTeam,
+      is_active: true,
+      group_slug: currentGroup.slug,
+    }).select().single();
     if (error) {
       if (error.code === '23505') alert('이미 등록된 멤버입니다.');
       else alert('추가 실패: ' + error.message);
       return;
     }
-    members.push({ id: data.id, name: data.name, dislikes: [] });
+    members.push({ id: data.id, name: data.name, team: data.team, dislikes: [] });
     activeMembers.push(data.id);
     input.value = '';
-    input.focus();
+    selectedTeam = null;
+    document.querySelectorAll('#teamChips .chip').forEach(c => c.classList.remove('active'));
     renderMembers();
     drawWheel();
+    document.getElementById('addMemberModal').classList.remove('show');
   }
 
   async function removeMember(id) {
@@ -1237,6 +1311,7 @@
         <div class="member-item">
           <input type="checkbox" ${isActive ? 'checked' : ''} onchange="toggleMember(${m.id})" title="참여 여부">
           <span class="member-name ${isActive ? '' : 'inactive'}" onclick="openDislikeModal(${m.id})">${escapeHtml(m.name)}</span>
+          ${m.team ? `<span class="team-badge" data-team="${m.team}">${m.team}</span>` : ''}
           <span class="dislike-count ${dislikeCount === 0 ? 'zero' : ''}" onclick="openDislikeModal(${m.id})" title="비선호 식당">${dislikeCount}</span>
           <button class="remove-btn" onclick="removeMember(${m.id})" title="삭제">&times;</button>
         </div>
