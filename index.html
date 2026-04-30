@@ -134,13 +134,10 @@
     .filter-chips {
       display: flex;
       gap: 6px;
-      flex-wrap: nowrap;
-      overflow-x: auto;
+      flex-wrap: wrap;
+      justify-content: center;
       max-width: 420px;
-      scrollbar-width: none;
     }
-
-    .filter-chips::-webkit-scrollbar { display: none; }
 
     .filter-chip {
       padding: 4px 12px;
@@ -350,12 +347,8 @@
     .team-filter-chips {
       display: flex;
       gap: 6px;
-      flex-wrap: nowrap;
-      overflow-x: auto;
-      scrollbar-width: none;
+      flex-wrap: wrap;
     }
-
-    .team-filter-chips::-webkit-scrollbar { display: none; }
 
     /* 멤버 추가 버튼 */
     .add-member-btn {
