@@ -8,19 +8,23 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5efe6;
+      background-image:
+        radial-gradient(circle at 18% 28%, #ffffff 1.5px, transparent 1.5px),
+        radial-gradient(circle at 82% 70%, #ffe9f3 2px, transparent 2px);
+      background-size: 80px 80px, 100px 100px;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      color: #fff;
+      color: #111;
     }
 
     .app {
       display: flex;
       gap: 40px;
-      align-items: center;
+      align-items: flex-start;
       padding: 40px;
     }
 
@@ -29,7 +33,27 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 24px;
+      gap: 18px;
+      position: relative;
+    }
+
+    .spinner-section::before {
+      content: 'RANDOM EAT';
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: -1.5px;
+      line-height: 0.95;
+      color: #111;
+      text-align: center;
+    }
+
+    .spinner-section::after {
+      content: 'SUCCESS IS YOUR LUNCH';
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #555;
+      margin-top: -10px;
     }
 
     .wheel-container {
@@ -41,7 +65,7 @@
     canvas {
       width: 420px;
       height: 420px;
-      filter: drop-shadow(0 0 30px rgba(100, 100, 255, 0.3));
+      filter: drop-shadow(6px 6px 0 #111);
     }
 
     /* 포인터 (삼각형) */
@@ -54,8 +78,7 @@
       height: 0;
       border-left: 18px solid transparent;
       border-right: 18px solid transparent;
-      border-top: 36px solid #ff4757;
-      filter: drop-shadow(0 2px 6px rgba(255, 71, 87, 0.6));
+      border-top: 36px solid #111;
       z-index: 10;
       transition: transform 0.1s;
     }
@@ -70,33 +93,41 @@
     }
 
     .spin-btn {
-      padding: 16px 60px;
-      font-size: 20px;
-      font-weight: 700;
-      border: none;
+      padding: 16px 56px;
+      font-size: 16px;
+      font-weight: 800;
+      border: 2.5px solid #111;
       border-radius: 50px;
-      background: linear-gradient(135deg, #ff4757, #ff6b81);
+      background: #ff5fa2;
       color: #fff;
       cursor: pointer;
-      transition: all 0.3s;
-      box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
+      transition: all 0.15s;
+      box-shadow: 4px 4px 0 #111;
       letter-spacing: 2px;
+      text-transform: uppercase;
     }
 
     .spin-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 30px rgba(255, 71, 87, 0.6);
+      transform: translate(-2px, -2px);
+      box-shadow: 6px 6px 0 #111;
+      background: #ff3a8e;
+    }
+
+    .spin-btn:active:not(:disabled) {
+      transform: translate(2px, 2px);
+      box-shadow: 0 0 0 #111;
     }
 
     .spin-btn:disabled {
-      opacity: 0.5;
+      opacity: 0.4;
       cursor: not-allowed;
     }
 
     .excluded-info {
-      font-size: 13px;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+      color: #888;
       text-align: center;
+      font-weight: 600;
     }
 
     /* 추첨 필터 */
@@ -110,94 +141,96 @@
 
     .filter-chip {
       padding: 6px 12px;
-      border: 1px solid rgba(255,255,255,0.2);
-      background: transparent;
-      color: rgba(255,255,255,0.5);
-      border-radius: 14px;
+      border: 2px solid #111;
+      background: #fff;
+      color: #111;
+      border-radius: 16px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
 
     .filter-chip:hover {
-      border-color: rgba(255,255,255,0.4);
-      color: rgba(255,255,255,0.8);
+      background: #ffe9f3;
     }
 
     .filter-chip.active {
-      background: linear-gradient(135deg, #5f27cd, #7c3aed);
-      border-color: transparent;
+      background: #ff5fa2;
       color: #fff;
     }
 
     /* 오른쪽: 항목 관리 패널 */
     .panel {
-      background: rgba(255, 255, 255, 0.06);
-      backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 20px;
-      padding: 32px;
-      width: 340px;
-      max-height: 560px;
+      background: #fff;
+      border: 2.5px solid #111;
+      border-radius: 18px;
+      padding: 22px;
+      width: 360px;
+      max-height: 600px;
       display: flex;
       flex-direction: column;
-      gap: 20px;
+      gap: 14px;
+      box-shadow: 6px 6px 0 #111;
     }
 
     .group-bar {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 10px 12px;
-      background: rgba(95, 39, 205, 0.15);
-      border: 1px solid rgba(95, 39, 205, 0.3);
-      border-radius: 12px;
-      font-size: 13px;
+      gap: 6px;
+      padding: 8px 10px;
+      background: #fff8f0;
+      border: 2px solid #111;
+      border-radius: 10px;
+      font-size: 12px;
     }
 
-    .group-bar .group-icon {
-      font-size: 16px;
-    }
+    .group-bar .group-icon { font-size: 15px; }
 
     .group-bar .group-name {
       flex: 1;
-      font-weight: 600;
-      color: #fff;
+      font-weight: 800;
+      color: #111;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .group-bar .group-action {
-      background: rgba(255, 255, 255, 0.08);
-      border: none;
+      background: #fff;
+      border: 1.5px solid #111;
       width: 28px;
       height: 28px;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 14px;
-      transition: background 0.2s;
+      font-size: 13px;
+      transition: background 0.15s;
     }
 
     .group-bar .group-action:hover {
-      background: rgba(255, 255, 255, 0.18);
+      background: #ffe9f3;
     }
 
     /* 식당 추가 버튼 */
     .add-restaurant-btn {
       padding: 12px;
-      border: none;
+      border: 2px solid #111;
       border-radius: 12px;
-      background: linear-gradient(135deg, #5f27cd, #7c3aed);
+      background: #ff5fa2;
       color: #fff;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
+      box-shadow: 3px 3px 0 #111;
     }
 
-    .add-restaurant-btn:hover { opacity: 0.85; }
+    .add-restaurant-btn:hover {
+      background: #ff3a8e;
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 #111;
+    }
 
     /* 카테고리 칩 */
     .category-chips {
@@ -208,82 +241,81 @@
 
     .chip {
       flex: 1;
-      min-width: 64px;
+      min-width: 60px;
       padding: 7px 10px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.6);
+      border: 2px solid #111;
+      background: #fff;
+      color: #111;
       border-radius: 18px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
       white-space: nowrap;
     }
 
-    .chip:hover {
-      border-color: rgba(255,255,255,0.3);
-      color: #fff;
-    }
+    .chip:hover { background: #fff8f0; }
 
     .chip.active {
-      background: linear-gradient(135deg, #5f27cd, #7c3aed);
-      border-color: transparent;
+      background: #ff5fa2;
       color: #fff;
     }
 
     .category-badge {
       font-size: 10px;
       padding: 2px 7px;
-      border-radius: 10px;
-      font-weight: 600;
-      background: rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.6);
+      border-radius: 8px;
+      font-weight: 700;
+      background: #f5efe6;
+      color: #555;
+      border: 1.5px solid #111;
     }
 
-    .category-badge[data-cat="한식"] { background: rgba(29, 209, 161, 0.18); color: #1dd1a1; }
-    .category-badge[data-cat="중식"] { background: rgba(255, 71, 87, 0.18); color: #ff6b6b; }
-    .category-badge[data-cat="일식"] { background: rgba(254, 202, 87, 0.18); color: #feca57; }
-    .category-badge[data-cat="양식"] { background: rgba(84, 160, 255, 0.18); color: #54a0ff; }
-    .category-badge[data-cat="분식"] { background: rgba(255, 159, 243, 0.18); color: #ff9ff3; }
-    .category-badge[data-cat="기타"] { background: rgba(162, 155, 254, 0.18); color: #a29bfe; }
+    .category-badge[data-cat="한식"] { background: #c1f4e0; color: #0e7a55; }
+    .category-badge[data-cat="중식"] { background: #ffd0d0; color: #c53030; }
+    .category-badge[data-cat="일식"] { background: #fff0c1; color: #a87a00; }
+    .category-badge[data-cat="양식"] { background: #c1d8ff; color: #1a4a99; }
+    .category-badge[data-cat="분식"] { background: #ffd6f5; color: #b73a8d; }
+    .category-badge[data-cat="기타"] { background: #e0d6ff; color: #5a3a99; }
 
     .team-badge {
       font-size: 10px;
       padding: 2px 7px;
-      border-radius: 10px;
-      font-weight: 600;
-      background: rgba(255,255,255,0.08);
-      color: rgba(255,255,255,0.6);
+      border-radius: 8px;
+      font-weight: 700;
+      background: #f5efe6;
+      color: #555;
+      border: 1.5px solid #111;
     }
 
-    .team-badge[data-team="기획팀"] { background: rgba(84, 160, 255, 0.18); color: #54a0ff; }
-    .team-badge[data-team="제작팀"] { background: rgba(29, 209, 161, 0.18); color: #1dd1a1; }
-    .team-badge[data-team="컨텐츠팀"] { background: rgba(254, 202, 87, 0.18); color: #feca57; }
-    .team-badge[data-team="플랫폼팀"] { background: rgba(162, 155, 254, 0.18); color: #a29bfe; }
+    .team-badge[data-team="기획팀"] { background: #c1d8ff; color: #1a4a99; }
+    .team-badge[data-team="제작팀"] { background: #c1f4e0; color: #0e7a55; }
+    .team-badge[data-team="컨텐츠팀"] { background: #fff0c1; color: #a87a00; }
+    .team-badge[data-team="플랫폼팀"] { background: #e0d6ff; color: #5a3a99; }
 
-    /* 멤버 일괄 선택 */
-    .bulk-actions {
+    /* 멤버 일괄 선택 체크박스 */
+    .bulk-check {
       display: flex;
-      gap: 6px;
-    }
-
-    .bulk-btn {
-      flex: 1;
-      padding: 8px;
-      border: 1px solid rgba(255,255,255,0.15);
-      background: rgba(255,255,255,0.05);
-      color: rgba(255,255,255,0.7);
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      background: #fff8f0;
+      border: 2px solid #111;
       border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
+      font-size: 13px;
+      font-weight: 700;
+      color: #111;
+      user-select: none;
     }
 
-    .bulk-btn:hover {
-      background: rgba(255,255,255,0.1);
-      color: #fff;
+    .bulk-check:hover { background: #ffe9f3; }
+
+    .bulk-check input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #ff5fa2;
+      cursor: pointer;
     }
 
     .team-filter-chips {
@@ -295,23 +327,29 @@
     /* 멤버 추가 버튼 */
     .add-member-btn {
       padding: 12px;
-      border: none;
+      border: 2px solid #111;
       border-radius: 12px;
-      background: linear-gradient(135deg, #1dd1a1, #00cec9);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 600;
+      background: #4cd5b8;
+      color: #111;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
+      box-shadow: 3px 3px 0 #111;
     }
 
-    .add-member-btn:hover { opacity: 0.85; }
+    .add-member-btn:hover {
+      background: #3bbfa3;
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 #111;
+    }
 
     /* 읽기 전용 모드 (잠금 상태) */
     body.readonly .input-row,
     body.readonly .add-restaurant-btn,
     body.readonly .add-member-btn,
-    body.readonly .bulk-actions,
+    body.readonly .bulk-check,
     body.readonly .team-filter-chips,
     body.readonly .clear-history-btn,
     body.readonly .item .remove-btn,
@@ -333,39 +371,41 @@
 
     .tabs {
       display: flex;
-      background: rgba(255, 255, 255, 0.06);
+      background: #f5efe6;
+      border: 2px solid #111;
       border-radius: 12px;
-      padding: 4px;
-      gap: 4px;
+      padding: 3px;
+      gap: 3px;
     }
 
     .tab {
       flex: 1;
-      padding: 10px 0;
+      padding: 9px 0;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       background: transparent;
-      color: rgba(255, 255, 255, 0.45);
+      color: #555;
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
 
     .tab.active {
-      background: rgba(255, 255, 255, 0.12);
+      background: #111;
       color: #fff;
     }
 
-    .tab:hover:not(.active) { color: rgba(255, 255, 255, 0.7); }
+    .tab:hover:not(.active) { color: #111; }
 
     .tab-content { display: none; flex-direction: column; gap: 12px; flex: 1; overflow: hidden; }
     .tab-content.active { display: flex; }
 
     .panel h2 {
       font-size: 20px;
-      font-weight: 700;
+      font-weight: 800;
       text-align: center;
+      color: #111;
     }
 
     .input-row {
@@ -375,50 +415,49 @@
 
     .input-row input {
       flex: 1;
-      padding: 12px 16px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.08);
-      color: #fff;
-      font-size: 15px;
+      padding: 10px 14px;
+      border: 2px solid #111;
+      border-radius: 10px;
+      background: #fff;
+      color: #111;
+      font-size: 14px;
       outline: none;
-      transition: border 0.2s;
+      transition: background 0.15s;
     }
 
-    .input-row input::placeholder { color: rgba(255, 255, 255, 0.35); }
-    .input-row input:focus { border-color: rgba(255, 255, 255, 0.4); }
+    .input-row input::placeholder { color: #999; }
+    .input-row input:focus { background: #fff8f0; }
 
     .add-btn {
-      padding: 12px 20px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #5f27cd, #7c3aed);
+      padding: 10px 18px;
+      border: 2px solid #111;
+      border-radius: 10px;
+      background: #ff5fa2;
       color: #fff;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
       white-space: nowrap;
     }
 
-    .add-btn:hover { opacity: 0.85; }
+    .add-btn:hover { background: #ff3a8e; }
 
     .reset-btn {
       padding: 10px;
-      border: 1px solid rgba(255, 71, 87, 0.4);
-      border-radius: 12px;
-      background: rgba(255, 71, 87, 0.1);
-      color: #ff6b81;
-      font-size: 14px;
-      font-weight: 600;
+      border: 2px solid #111;
+      border-radius: 10px;
+      background: #fff;
+      color: #111;
+      font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
       text-align: center;
     }
 
     .reset-btn:hover {
-      background: rgba(255, 71, 87, 0.2);
-      border-color: rgba(255, 71, 87, 0.6);
+      background: #ffe9f3;
     }
 
     .history-list {
@@ -426,20 +465,22 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       padding-right: 4px;
     }
 
     .history-list::-webkit-scrollbar { width: 4px; }
     .history-list::-webkit-scrollbar-track { background: transparent; }
-    .history-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+    .history-list::-webkit-scrollbar-thumb { background: #111; border-radius: 2px; }
 
     .history-date {
-      font-size: 12px;
-      font-weight: 700;
-      color: rgba(255, 255, 255, 0.4);
+      font-size: 11px;
+      font-weight: 800;
+      color: #111;
+      letter-spacing: 1px;
+      text-transform: uppercase;
       padding-bottom: 4px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: 2px solid #111;
     }
 
     .history-group {
@@ -453,36 +494,38 @@
       align-items: center;
       justify-content: space-between;
       padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.05);
+      background: #fff8f0;
+      border: 1.5px solid #111;
       border-radius: 8px;
       font-size: 13px;
     }
 
     .history-entry .h-name {
-      font-weight: 600;
-      color: #f9ca24;
+      font-weight: 700;
+      color: #111;
     }
 
     .history-entry .h-time {
-      color: rgba(255, 255, 255, 0.3);
+      color: #888;
       font-size: 12px;
     }
 
     .clear-history-btn {
       padding: 10px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 12px;
-      background: transparent;
-      color: rgba(255, 255, 255, 0.45);
+      border: 2px solid #111;
+      border-radius: 10px;
+      background: #fff;
+      color: #555;
       font-size: 13px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
       text-align: center;
     }
 
     .clear-history-btn:hover {
-      color: #ff6b81;
-      border-color: rgba(255, 71, 87, 0.4);
+      background: #ffe9f3;
+      color: #ff3a8e;
     }
 
     .items-list {
@@ -496,14 +539,15 @@
 
     .items-list::-webkit-scrollbar { width: 4px; }
     .items-list::-webkit-scrollbar-track { background: transparent; }
-    .items-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+    .items-list::-webkit-scrollbar-thumb { background: #111; border-radius: 2px; }
 
     .item {
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 10px 14px;
-      background: rgba(255, 255, 255, 0.07);
+      padding: 9px 12px;
+      background: #fff;
+      border: 1.5px solid #111;
       border-radius: 10px;
       font-size: 14px;
       animation: slideIn 0.25s ease;
@@ -515,32 +559,34 @@
     }
 
     .item .color-dot {
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
       border-radius: 50%;
       flex-shrink: 0;
+      border: 1.5px solid #111;
     }
 
-    .item .name { flex: 1; }
+    .item .name { flex: 1; font-weight: 600; color: #111; }
 
     .item .remove-btn {
       background: none;
       border: none;
-      color: rgba(255, 255, 255, 0.35);
+      color: #aaa;
       cursor: pointer;
       font-size: 18px;
       line-height: 1;
-      transition: color 0.2s;
+      transition: color 0.15s;
       padding: 0 2px;
     }
 
-    .item .remove-btn:hover { color: #ff4757; }
+    .item .remove-btn:hover { color: #ff3a8e; }
 
     .empty-msg {
       text-align: center;
-      color: rgba(255, 255, 255, 0.3);
+      color: #aaa;
       font-size: 14px;
       padding: 30px 0;
+      font-weight: 600;
     }
 
     /* 멤버 관리 */
@@ -548,8 +594,9 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 14px;
-      background: rgba(255, 255, 255, 0.07);
+      padding: 9px 12px;
+      background: #fff;
+      border: 1.5px solid #111;
       border-radius: 10px;
       font-size: 14px;
       animation: slideIn 0.25s ease;
@@ -558,20 +605,21 @@
     .member-item input[type="checkbox"] {
       width: 16px;
       height: 16px;
-      accent-color: #1dd1a1;
+      accent-color: #ff5fa2;
       cursor: pointer;
       flex-shrink: 0;
     }
 
     .member-item .member-name {
       flex: 1;
-      font-weight: 500;
+      font-weight: 600;
+      color: #111;
       cursor: pointer;
-      transition: color 0.2s;
+      transition: color 0.15s;
     }
 
     .member-item .member-name:hover {
-      color: #ffa500;
+      color: #ff3a8e;
     }
 
     .member-item .member-name.inactive {
@@ -581,29 +629,34 @@
 
     .member-item .dislike-count {
       font-size: 12px;
-      color: #ff6b81;
-      font-weight: 600;
+      color: #ff3a8e;
+      font-weight: 800;
       flex-shrink: 0;
       cursor: pointer;
-      padding: 2px 4px;
+      padding: 2px 7px;
+      border-radius: 8px;
+      background: #ffe9f3;
+      border: 1.5px solid #ff5fa2;
     }
 
     .member-item .dislike-count.zero {
-      color: rgba(255, 255, 255, 0.2);
+      color: #aaa;
+      background: #f5efe6;
+      border-color: #ccc;
     }
 
     .member-item .remove-btn {
       background: none;
       border: none;
-      color: rgba(255, 255, 255, 0.35);
+      color: #aaa;
       cursor: pointer;
       font-size: 18px;
       line-height: 1;
-      transition: color 0.2s;
+      transition: color 0.15s;
       padding: 0 2px;
     }
 
-    .member-item .remove-btn:hover { color: #ff4757; }
+    .member-item .remove-btn:hover { color: #ff3a8e; }
 
     .members-list {
       flex: 1;
@@ -616,23 +669,23 @@
 
     .members-list::-webkit-scrollbar { width: 4px; }
     .members-list::-webkit-scrollbar-track { background: transparent; }
-    .members-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+    .members-list::-webkit-scrollbar-thumb { background: #111; border-radius: 2px; }
 
     /* 결과 모달 */
     .modal-overlay {
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.4);
       justify-content: center;
       align-items: center;
       z-index: 100;
+      padding: 16px;
     }
 
     .modal-overlay.show {
       display: flex;
-      animation: fadeIn 0.3s ease;
+      animation: fadeIn 0.2s ease;
     }
 
     @keyframes fadeIn {
@@ -641,12 +694,13 @@
     }
 
     .modal {
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 24px;
-      padding: 48px 56px;
+      background: #fff;
+      border: 2.5px solid #111;
+      border-radius: 18px;
+      padding: 36px 48px;
       text-align: center;
-      animation: scaleIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 6px 6px 0 #111;
+      animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     @keyframes scaleIn {
@@ -655,39 +709,41 @@
     }
 
     .modal .label {
-      font-size: 16px;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: 12px;
+      color: #555;
       margin-bottom: 12px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
     }
 
     .modal .winner {
-      font-size: 42px;
-      font-weight: 800;
-      background: linear-gradient(135deg, #f9ca24, #f0932b, #ff6b6b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      margin-bottom: 32px;
+      font-size: 38px;
+      font-weight: 900;
+      color: #111;
+      margin-bottom: 24px;
+      line-height: 1.1;
     }
 
     .modal .confetti-text {
       font-size: 32px;
-      margin-bottom: 24px;
+      margin-bottom: 16px;
     }
 
     .modal .close-btn {
-      padding: 12px 40px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
-      background: transparent;
+      padding: 10px 36px;
+      border: 2px solid #111;
+      border-radius: 10px;
+      background: #ff5fa2;
       color: #fff;
-      font-size: 15px;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
 
     .modal .close-btn:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: #ff3a8e;
     }
 
     /* 비선호 설정 모달 */
@@ -695,46 +751,51 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.7);
-      backdrop-filter: blur(8px);
+      background: rgba(0, 0, 0, 0.4);
       justify-content: center;
       align-items: center;
       z-index: 100;
+      padding: 16px;
     }
 
     .dislike-modal-overlay.show {
       display: flex;
-      animation: fadeIn 0.3s ease;
+      animation: fadeIn 0.2s ease;
     }
 
     .dislike-modal {
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 20px;
-      padding: 32px;
+      background: #fff;
+      border: 2.5px solid #111;
+      border-radius: 16px;
+      padding: 24px;
       width: 320px;
-      max-height: 480px;
+      max-height: 520px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 12px;
+      box-shadow: 6px 6px 0 #111;
       animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .dislike-modal h3 {
       font-size: 16px;
-      font-weight: 700;
+      font-weight: 800;
       text-align: center;
+      color: #111;
     }
 
     .dislike-modal .member-label {
-      text-align: center;
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.5);
+      font-size: 11px;
+      color: #555;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .dislike-modal .member-label span {
-      color: #ffa500;
-      font-weight: 600;
+      color: #ff3a8e;
+      font-weight: 800;
+      text-transform: none;
     }
 
     .dislike-selected-summary {
@@ -742,8 +803,8 @@
       flex-wrap: wrap;
       gap: 6px;
       padding: 10px 12px;
-      background: rgba(255, 71, 87, 0.08);
-      border: 1px solid rgba(255, 71, 87, 0.2);
+      background: #fff8f0;
+      border: 1.5px solid #111;
       border-radius: 10px;
       min-height: 36px;
       align-items: center;
@@ -752,16 +813,15 @@
     .dislike-selected-summary .selected-tag {
       font-size: 11px;
       padding: 3px 8px;
-      background: rgba(255, 71, 87, 0.2);
-      border: 1px solid rgba(255, 71, 87, 0.4);
-      border-radius: 6px;
-      color: #ff6b81;
-      font-weight: 500;
+      background: #ff5fa2;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 700;
     }
 
     .dislike-selected-summary .no-selected {
       font-size: 12px;
-      color: rgba(255, 255, 255, 0.25);
+      color: #aaa;
     }
 
     .dislike-items-list {
@@ -769,56 +829,58 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      max-height: 280px;
+      gap: 6px;
+      max-height: 240px;
       padding-right: 4px;
     }
 
     .dislike-items-list::-webkit-scrollbar { width: 4px; }
     .dislike-items-list::-webkit-scrollbar-track { background: transparent; }
-    .dislike-items-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 2px; }
+    .dislike-items-list::-webkit-scrollbar-thumb { background: #111; border-radius: 2px; }
 
     .dislike-check-item {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 8px;
+      background: #fff8f0;
+      border: 1.5px solid #111;
+      border-radius: 10px;
       font-size: 14px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.15s;
     }
 
     .dislike-check-item:hover {
-      background: rgba(255, 255, 255, 0.1);
+      background: #ffe9f3;
     }
 
     .dislike-check-item input[type="checkbox"] {
       width: 16px;
       height: 16px;
-      accent-color: #ff6b6b;
+      accent-color: #ff5fa2;
       cursor: pointer;
     }
 
     .dislike-check-item label {
       cursor: pointer;
       flex: 1;
+      font-weight: 600;
     }
 
     .dislike-modal .confirm-btn {
-      padding: 12px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #5f27cd, #7c3aed);
+      padding: 11px;
+      border: 2px solid #111;
+      border-radius: 10px;
+      background: #ff5fa2;
       color: #fff;
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
     }
 
-    .dislike-modal .confirm-btn:hover { opacity: 0.85; }
+    .dislike-modal .confirm-btn:hover { background: #ff3a8e; }
 
     /* 반응형 */
     @media (max-width: 860px) {
@@ -869,10 +931,10 @@
 
     <div class="tab-content" id="contentMembers">
       <button class="add-member-btn" onclick="openAddMemberModal()">+ 멤버 추가</button>
-      <div class="bulk-actions">
-        <button class="bulk-btn" onclick="setAllMembersActive(true)">모두 선택</button>
-        <button class="bulk-btn" onclick="setAllMembersActive(false)">모두 해제</button>
-      </div>
+      <label class="bulk-check">
+        <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllMembers(event)">
+        <span>모두 선택</span>
+      </label>
       <div class="team-filter-chips" id="teamFilterChips"></div>
       <div class="members-list" id="membersList"></div>
     </div>
@@ -891,16 +953,16 @@
     <div class="label" style="margin-bottom:24px;">그룹을 만들거나 기존 그룹에 참여하세요</div>
 
     <input type="text" id="newGroupName" placeholder="새 그룹 이름 (예: 우리팀 점심)" maxlength="20"
-           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:2px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) createGroup()">
     <button class="confirm-btn" onclick="createGroup()" style="width:100%;">+ 새 그룹 만들기 (그룹장)</button>
 
     <div style="margin:20px 0 12px; opacity:0.4; font-size:12px;">또는</div>
 
     <input type="text" id="joinGroupSlug" placeholder="기존 그룹 코드 (예: abc123)" maxlength="20"
-           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:2px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) joinGroup()">
-    <button class="confirm-btn" onclick="joinGroup()" style="width:100%; background:linear-gradient(135deg, #00d2d3, #54a0ff);">→ 그룹 참여</button>
+    <button class="confirm-btn" onclick="joinGroup()" style="width:100%; background:#4cd5b8; color:#111; border:2px solid #111;">→ 그룹 참여</button>
   </div>
 </div>
 
@@ -917,7 +979,7 @@
   <div class="dislike-modal" style="width: 320px;">
     <h3>식당 편집</h3>
     <input type="text" id="editItemName" maxlength="20"
-           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:15px; outline:none; box-sizing:border-box;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:2px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) saveEditRestaurant()">
     <div class="member-label">카테고리</div>
     <div class="category-chips" id="editCategoryChips"></div>
@@ -929,11 +991,11 @@
   <div class="dislike-modal" style="width: 320px;">
     <h3>멤버 편집</h3>
     <input type="text" id="editMemberName" maxlength="10"
-           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:15px; outline:none; box-sizing:border-box;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:2px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) saveEditMember()">
     <div class="member-label">팀</div>
     <div class="category-chips" id="editTeamChips"></div>
-    <button class="confirm-btn" style="background:linear-gradient(135deg, #ff6b6b, #ff4757);" onclick="openDislikeFromEdit()">비선호 식당 설정</button>
+    <button class="confirm-btn" style="background:#fff; color:#111; border:2px solid #111;" onclick="openDislikeFromEdit()">비선호 식당 설정</button>
     <button class="confirm-btn" onclick="saveEditMember()">저장</button>
   </div>
 </div>
@@ -942,7 +1004,7 @@
   <div class="dislike-modal" style="width: 320px;">
     <h3>멤버 추가</h3>
     <input type="text" id="memberInput" placeholder="멤버 이름 입력..." maxlength="10"
-           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:15px; outline:none; box-sizing:border-box;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:2px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) addMember()">
     <div class="member-label">팀 (선택)</div>
     <div class="category-chips" id="teamChips"></div>
@@ -954,7 +1016,7 @@
   <div class="dislike-modal" style="width: 320px;">
     <h3>식당 추가</h3>
     <input type="text" id="itemInput" placeholder="식당 이름 입력..." maxlength="20"
-           style="width:100%; padding:12px 16px; border-radius:12px; border:1px solid rgba(255,255,255,0.15); background:rgba(255,255,255,0.08); color:#fff; font-size:15px; outline:none; box-sizing:border-box;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:2px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) addItem()">
     <div class="member-label">카테고리 (선택)</div>
     <div class="category-chips" id="categoryChips"></div>
@@ -1183,17 +1245,17 @@
       // 빈 상태 그리기
       ctx.beginPath();
       ctx.arc(CX, CY, R, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.fillStyle = '#fff8f0';
       ctx.fill();
-      ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-      ctx.lineWidth = 3;
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 5;
       ctx.stroke();
 
-      ctx.fillStyle = 'rgba(255,255,255,0.25)';
-      ctx.font = '600 28px -apple-system, sans-serif';
+      ctx.fillStyle = '#111';
+      ctx.font = '800 28px -apple-system, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      const msg = items.length === 0 ? '항목을 추가해주세요' : '모든 식당이 제외됨';
+      const msg = items.length === 0 ? '식당을 추가해주세요' : '모든 식당이 제외됨';
       ctx.fillText(msg, CX, CY);
       return;
     }
@@ -1218,8 +1280,8 @@
       ctx.fill();
 
       // 경계선
-      ctx.strokeStyle = 'rgba(0,0,0,0.2)';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#111';
+      ctx.lineWidth = 3;
       ctx.stroke();
 
       // 텍스트
@@ -1245,11 +1307,11 @@
 
     // 중심 원
     ctx.beginPath();
-    ctx.arc(CX, CY, 30, 0, Math.PI * 2);
-    ctx.fillStyle = '#1a1a2e';
+    ctx.arc(CX, CY, 32, 0, Math.PI * 2);
+    ctx.fillStyle = '#ff5fa2';
     ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-    ctx.lineWidth = 3;
+    ctx.strokeStyle = '#111';
+    ctx.lineWidth = 4;
     ctx.stroke();
   }
 
@@ -1364,7 +1426,7 @@
     const { data, error } = await sb.from('members').insert({
       name,
       team: selectedTeam,
-      is_active: true,
+      is_active: false,
       group_slug: currentGroup.slug,
     }).select().single();
     if (error) {
@@ -1373,7 +1435,6 @@
       return;
     }
     members.push({ id: data.id, name: data.name, team: data.team, dislikes: [] });
-    activeMembers.push(data.id);
     input.value = '';
     selectedTeam = null;
     document.querySelectorAll('#teamChips .chip').forEach(c => c.classList.remove('active'));
@@ -1407,6 +1468,24 @@
     renderMembers();
     drawWheel();
     await sb.from('members').update({ is_active: active }).eq('group_slug', currentGroup.slug);
+  }
+
+  function toggleAllMembers(e) {
+    setAllMembersActive(e.target.checked);
+  }
+
+  function updateBulkCheckbox() {
+    const cb = document.getElementById('selectAllCheckbox');
+    if (!cb) return;
+    if (members.length === 0) {
+      cb.checked = false;
+      cb.indeterminate = false;
+      return;
+    }
+    const allActive = members.every(m => activeMembers.includes(m.id));
+    const noneActive = activeMembers.length === 0;
+    cb.checked = allActive;
+    cb.indeterminate = !allActive && !noneActive;
   }
 
   async function toggleTeamActive(team) {
@@ -1447,6 +1526,7 @@
 
   function renderMembers() {
     renderTeamFilterChips();
+    updateBulkCheckbox();
     const list = document.getElementById('membersList');
     if (members.length === 0) {
       list.innerHTML = '<div class="empty-msg">아직 추가된 멤버가 없습니다</div>';
