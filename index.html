@@ -104,26 +104,18 @@
       padding: 16px 56px;
       font-size: 16px;
       font-weight: 800;
-      border: 2.5px solid #111;
+      border: none;
       border-radius: 50px;
       background: #ff5fa2;
       color: #fff;
       cursor: pointer;
       transition: all 0.15s;
-      box-shadow: 4px 4px 0 #111;
       letter-spacing: 2px;
       text-transform: uppercase;
     }
 
     .spin-btn:hover:not(:disabled) {
-      transform: translate(-2px, -2px);
-      box-shadow: 6px 6px 0 #111;
       background: #ff3a8e;
-    }
-
-    .spin-btn:active:not(:disabled) {
-      transform: translate(2px, 2px);
-      box-shadow: 0 0 0 #111;
     }
 
     .spin-btn:disabled {
@@ -149,8 +141,8 @@
 
     .filter-chip {
       padding: 6px 10px;
-      border: 1.5px solid #111;
-      background: #fff;
+      border: none;
+      background: #f5efe6;
       color: #111;
       border-radius: 12px;
       font-size: 12px;
@@ -209,7 +201,7 @@
 
     .group-bar .group-action {
       background: #fff;
-      border: 1.5px solid #111;
+      border: none;
       width: 28px;
       height: 28px;
       border-radius: 8px;
@@ -225,7 +217,7 @@
     /* 식당 추가 버튼 */
     .add-restaurant-btn {
       padding: 12px;
-      border: 2px solid #111;
+      border: none;
       border-radius: 12px;
       background: #ff5fa2;
       color: #fff;
@@ -234,13 +226,10 @@
       letter-spacing: 0.5px;
       cursor: pointer;
       transition: all 0.15s;
-      box-shadow: 3px 3px 0 #111;
     }
 
     .add-restaurant-btn:hover {
       background: #ff3a8e;
-      transform: translate(-1px, -1px);
-      box-shadow: 4px 4px 0 #111;
     }
 
     /* 카테고리 칩 */
@@ -255,8 +244,8 @@
       padding: 0 16px;
       display: inline-flex;
       align-items: center;
-      border: 2px solid #111;
-      background: #fff;
+      border: none;
+      background: #f5efe6;
       color: #111;
       border-radius: 22px;
       font-size: 13px;
@@ -375,7 +364,7 @@
     /* 멤버 추가 버튼 */
     .add-member-btn {
       padding: 12px;
-      border: 2px solid #111;
+      border: none;
       border-radius: 12px;
       background: #4cd5b8;
       color: #111;
@@ -384,13 +373,10 @@
       letter-spacing: 0.5px;
       cursor: pointer;
       transition: all 0.15s;
-      box-shadow: 3px 3px 0 #111;
     }
 
     .add-member-btn:hover {
       background: #3bbfa3;
-      transform: translate(-1px, -1px);
-      box-shadow: 4px 4px 0 #111;
     }
 
     /* 읽기 전용 모드 (잠금 상태) */
@@ -420,7 +406,7 @@
     .tabs {
       display: flex;
       background: #f5efe6;
-      border: 2px solid #111;
+      border: none;
       border-radius: 12px;
       padding: 3px;
       gap: 3px;
@@ -478,7 +464,7 @@
 
     .add-btn {
       padding: 10px 18px;
-      border: 2px solid #111;
+      border: none;
       border-radius: 10px;
       background: #ff5fa2;
       color: #fff;
@@ -493,9 +479,9 @@
 
     .reset-btn {
       padding: 10px;
-      border: 2px solid #111;
+      border: none;
       border-radius: 10px;
-      background: #fff;
+      background: #f5efe6;
       color: #111;
       font-size: 13px;
       font-weight: 700;
@@ -560,9 +546,9 @@
 
     .clear-history-btn {
       padding: 10px;
-      border: 2px solid #111;
+      border: none;
       border-radius: 10px;
-      background: #fff;
+      background: #f5efe6;
       color: #555;
       font-size: 13px;
       font-weight: 700;
@@ -773,7 +759,7 @@
 
     .modal .close-btn {
       padding: 10px 36px;
-      border: 2px solid #111;
+      border: none;
       border-radius: 10px;
       background: #ff5fa2;
       color: #fff;
@@ -911,7 +897,7 @@
 
     .dislike-modal .confirm-btn {
       padding: 11px;
-      border: 2px solid #111;
+      border: none;
       border-radius: 10px;
       background: #ff5fa2;
       color: #fff;
@@ -1003,7 +989,7 @@
     <input type="text" id="joinGroupSlug" placeholder="기존 그룹 코드 (예: abc123)" maxlength="20"
            style="width:100%; padding:12px 16px; border-radius:10px; border:2px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) joinGroup()">
-    <button class="confirm-btn" onclick="joinGroup()" style="width:100%; background:#4cd5b8; color:#111; border:2px solid #111;">→ 그룹 참여</button>
+    <button class="confirm-btn" onclick="joinGroup()" style="width:100%; background:#4cd5b8; color:#111; border:none;">→ 그룹 참여</button>
   </div>
 </div>
 
@@ -1036,7 +1022,7 @@
            onkeydown="if(event.key==='Enter' && !event.isComposing) saveEditMember()">
     <div class="member-label">팀</div>
     <div class="category-chips" id="editTeamChips"></div>
-    <button class="confirm-btn" style="background:#fff; color:#111; border:2px solid #111;" onclick="openDislikeFromEdit()">비선호 식당 설정</button>
+    <button class="confirm-btn" style="background:#f5efe6; color:#111; border:none;" onclick="openDislikeFromEdit()">비선호 식당 설정</button>
     <button class="confirm-btn" onclick="saveEditMember()">저장</button>
   </div>
 </div>
