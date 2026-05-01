@@ -21,31 +21,35 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       color: #111;
     }
 
     .app {
       display: flex;
-      gap: 40px;
-      align-items: flex-start;
-      padding: 40px;
+      flex-direction: column;
+      gap: 20px;
+      padding: 20px 16px 32px;
+      width: 100%;
+      max-width: 375px;
+      align-items: center;
     }
 
-    /* 왼쪽: 돌림판 영역 */
+    /* 돌림판 영역 */
     .spinner-section {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 18px;
+      gap: 14px;
       position: relative;
+      width: 100%;
     }
 
     .spinner-section::before {
       content: 'RANDOM EAT';
-      font-size: 48px;
+      font-size: 36px;
       font-weight: 900;
-      letter-spacing: -1.5px;
+      letter-spacing: -1px;
       line-height: 0.95;
       color: #111;
       text-align: center;
@@ -53,22 +57,22 @@
 
     .spinner-section::after {
       content: 'SUCCESS IS YOUR LUNCH';
-      font-size: 14px;
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       color: #555;
-      margin-top: -10px;
+      margin-top: -6px;
     }
 
     .wheel-container {
       position: relative;
-      width: 420px;
-      height: 420px;
+      width: 300px;
+      height: 300px;
     }
 
     canvas {
-      width: 420px;
-      height: 420px;
+      width: 300px;
+      height: 300px;
     }
 
     /* 포인터 (삼각형) */
@@ -96,8 +100,8 @@
     }
 
     .spin-btn {
-      padding: 16px 56px;
-      font-size: 16px;
+      padding: 14px 48px;
+      font-size: 14px;
       font-weight: 800;
       border: none;
       border-radius: 50px;
@@ -105,7 +109,7 @@
       color: #fff;
       cursor: pointer;
       transition: all 0.15s;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       text-transform: uppercase;
     }
 
@@ -131,7 +135,7 @@
       gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
-      max-width: 420px;
+      max-width: 100%;
     }
 
     .filter-chip {
@@ -158,14 +162,13 @@
       color: #fff;
     }
 
-    /* 오른쪽: 항목 관리 패널 */
+    /* 항목 관리 패널 */
     .panel {
       background: #fff;
       border: 0.5px solid #222;
-      border-radius: 18px;
-      padding: 44px 22px;
-      width: 360px;
-      max-height: 720px;
+      border-radius: 16px;
+      padding: 24px 16px;
+      width: 100%;
       display: flex;
       flex-direction: column;
       gap: 14px;
@@ -903,17 +906,13 @@
 
     .dislike-modal .confirm-btn:hover { background: #ff3a8e; }
 
-    /* 반응형 */
-    @media (max-width: 860px) {
-      .app {
-        flex-direction: column;
-        padding: 24px 16px;
-      }
+    /* 매우 좁은 화면 (≤340px) 추가 보정 */
+    @media (max-width: 340px) {
       .wheel-container, canvas {
-        width: 320px;
-        height: 320px;
+        width: 260px;
+        height: 260px;
       }
-      .panel { width: 100%; max-width: 380px; }
+      .spinner-section::before { font-size: 32px; }
     }
   </style>
 </head>
