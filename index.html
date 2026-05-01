@@ -161,7 +161,7 @@
     /* 오른쪽: 항목 관리 패널 */
     .panel {
       background: #fff;
-      border: 1px solid #222;
+      border: 0.5px solid #222;
       border-radius: 18px;
       padding: 44px 22px;
       width: 360px;
@@ -177,7 +177,7 @@
       gap: 6px;
       padding: 8px 10px;
       background: #fff8f0;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
       border-radius: 10px;
       font-size: 12px;
     }
@@ -263,7 +263,7 @@
       font-weight: 700;
       background: #f5efe6;
       color: #555;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
     }
 
     .category-badge[data-cat="한식"] { background: #c1f4e0; color: #0e7a55; }
@@ -280,7 +280,7 @@
       font-weight: 700;
       background: #f5efe6;
       color: #555;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
     }
 
     .team-badge[data-team="기획팀"] { background: #c1d8ff; color: #1a4a99; }
@@ -329,7 +329,7 @@
       padding: 6px 4px 4px;
       letter-spacing: 1px;
       text-transform: uppercase;
-      border-bottom: 1px dashed #111;
+      border-bottom: 0.5px dashed #111;
       margin-top: 6px;
     }
 
@@ -444,7 +444,7 @@
     .input-row input {
       flex: 1;
       padding: 10px 14px;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
       border-radius: 10px;
       background: #fff;
       color: #111;
@@ -523,7 +523,7 @@
       justify-content: space-between;
       padding: 8px 12px;
       background: #fff8f0;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
       border-radius: 8px;
       font-size: 13px;
     }
@@ -575,7 +575,7 @@
       gap: 10px;
       padding: 9px 12px;
       background: #fff;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
       border-radius: 10px;
       font-size: 14px;
       animation: slideIn 0.25s ease;
@@ -591,7 +591,7 @@
       height: 12px;
       border-radius: 50%;
       flex-shrink: 0;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
     }
 
     .item .name { flex: 1; font-weight: 600; color: #111; }
@@ -716,7 +716,7 @@
 
     .modal {
       background: #fff;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
       border-radius: 18px;
       padding: 36px 48px;
       text-align: center;
@@ -786,7 +786,7 @@
 
     .dislike-modal {
       background: #fff;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
       border-radius: 16px;
       padding: 24px;
       width: 320px;
@@ -825,7 +825,7 @@
       gap: 6px;
       padding: 10px 12px;
       background: #fff8f0;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
       border-radius: 10px;
       min-height: 36px;
       align-items: center;
@@ -865,7 +865,7 @@
       gap: 10px;
       padding: 8px 12px;
       background: #fff8f0;
-      border: 1px solid #111;
+      border: 0.5px solid #111;
       border-radius: 10px;
       font-size: 14px;
       cursor: pointer;
@@ -974,14 +974,14 @@
     <div class="label" style="margin-bottom:24px;">그룹을 만들거나 기존 그룹에 참여하세요</div>
 
     <input type="text" id="newGroupName" placeholder="새 그룹 이름 (예: 우리팀 점심)" maxlength="20"
-           style="width:100%; padding:12px 16px; border-radius:10px; border:1px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:0.5px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) createGroup()">
     <button class="confirm-btn" onclick="createGroup()" style="width:100%;">+ 새 그룹 만들기 (그룹장)</button>
 
     <div style="margin:20px 0 12px; opacity:0.4; font-size:12px;">또는</div>
 
     <input type="text" id="joinGroupSlug" placeholder="기존 그룹 코드 (예: abc123)" maxlength="20"
-           style="width:100%; padding:12px 16px; border-radius:10px; border:1px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:0.5px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box; margin-bottom:8px;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) joinGroup()">
     <button class="confirm-btn" onclick="joinGroup()" style="width:100%; background:#4cd5b8; color:#111; border:none;">→ 그룹 참여</button>
   </div>
@@ -1000,7 +1000,7 @@
   <div class="dislike-modal" style="width: 320px;">
     <h3>식당 편집</h3>
     <input type="text" id="editItemName" maxlength="20"
-           style="width:100%; padding:12px 16px; border-radius:10px; border:1px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:0.5px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) saveEditRestaurant()">
     <div class="member-label">카테고리</div>
     <div class="category-chips" id="editCategoryChips"></div>
@@ -1012,7 +1012,7 @@
   <div class="dislike-modal" style="width: 320px;">
     <h3>멤버 편집</h3>
     <input type="text" id="editMemberName" maxlength="10"
-           style="width:100%; padding:12px 16px; border-radius:10px; border:1px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:0.5px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) saveEditMember()">
     <div class="member-label">팀</div>
     <div class="category-chips" id="editTeamChips"></div>
@@ -1025,7 +1025,7 @@
   <div class="dislike-modal" style="width: 320px;">
     <h3>멤버 추가</h3>
     <input type="text" id="memberInput" placeholder="멤버 이름 입력..." maxlength="10"
-           style="width:100%; padding:12px 16px; border-radius:10px; border:1px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:0.5px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) addMember()">
     <div class="member-label">팀 (선택)</div>
     <div class="category-chips" id="teamChips"></div>
@@ -1037,7 +1037,7 @@
   <div class="dislike-modal" style="width: 320px;">
     <h3>식당 추가</h3>
     <input type="text" id="itemInput" placeholder="식당 이름 입력..." maxlength="20"
-           style="width:100%; padding:12px 16px; border-radius:10px; border:1px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
+           style="width:100%; padding:12px 16px; border-radius:10px; border:0.5px solid #111; background:#fff; color:#111; font-size:14px; outline:none; box-sizing:border-box;"
            onkeydown="if(event.key==='Enter' && !event.isComposing) addItem()">
     <div class="member-label">카테고리 (선택)</div>
     <div class="category-chips" id="categoryChips"></div>
@@ -1270,7 +1270,7 @@
       ctx.fillStyle = '#fff8f0';
       ctx.fill();
       ctx.strokeStyle = '#222';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       ctx.fillStyle = '#111';
@@ -1303,7 +1303,7 @@
 
       // 경계선
       ctx.strokeStyle = '#222';
-      ctx.lineWidth = 2;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       // 텍스트
