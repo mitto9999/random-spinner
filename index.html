@@ -29,7 +29,7 @@
       display: flex;
       flex-direction: column;
       gap: 20px;
-      padding: 20px 16px 32px;
+      padding: 20px 16px calc(80px + env(safe-area-inset-bottom));
       width: 100%;
       max-width: 375px;
       align-items: center;
@@ -400,34 +400,55 @@
       color: inherit;
     }
 
-    .tabs {
+    /* 하단 탭바 (모바일 네비게이션) */
+    .bottom-tabs {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 375px;
       display: flex;
-      background: #f8f8f8;
-      border: none;
-      border-radius: 12px;
-      padding: 3px;
-      gap: 3px;
+      background: #fff;
+      border-top: 0.5px solid #ccc;
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      z-index: 50;
     }
 
-    .tab {
+    .bottom-tab {
       flex: 1;
-      padding: 9px 0;
-      border: none;
-      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 6px 0;
       background: transparent;
-      color: #555;
-      font-size: 13px;
-      font-weight: 700;
+      border: none;
       cursor: pointer;
+      color: #999;
+      transition: color 0.15s;
+    }
+
+    .bottom-tab .tab-icon {
+      font-size: 20px;
+      filter: grayscale(0.6);
+      opacity: 0.5;
       transition: all 0.15s;
     }
 
-    .tab.active {
-      background: #111;
-      color: #fff;
+    .bottom-tab .tab-label {
+      font-size: 11px;
+      font-weight: 700;
     }
 
-    .tab:hover:not(.active) { color: #111; }
+    .bottom-tab.active {
+      color: #111;
+    }
+
+    .bottom-tab.active .tab-icon {
+      filter: none;
+      opacity: 1;
+    }
 
     .tab-content { display: none; flex-direction: column; gap: 12px; flex: 1; overflow: hidden; }
     .tab-content.active { display: flex; }
@@ -938,11 +959,6 @@
       <button class="group-action" onclick="shareGroup()" title="공유 링크 복사 (보기)">📋</button>
       <button class="group-action" onclick="leaveGroup()" title="다른 그룹 선택">🚪</button>
     </div>
-    <div class="tabs">
-      <button class="tab active" onclick="switchTab('manage')" id="tabManage">식당 관리</button>
-      <button class="tab" onclick="switchTab('members')" id="tabMembers">멤버 관리</button>
-      <button class="tab" onclick="switchTab('history')" id="tabHistory">당첨 이력</button>
-    </div>
 
     <div class="tab-content active" id="contentManage">
       <button class="add-restaurant-btn" onclick="openAddRestaurantModal()">+ 식당 추가</button>
@@ -965,6 +981,21 @@
     </div>
   </div>
 </div>
+
+<nav class="bottom-tabs" id="bottomTabs">
+  <button class="bottom-tab active" onclick="switchTab('manage')" id="tabManage">
+    <span class="tab-icon">🍴</span>
+    <span class="tab-label">식당</span>
+  </button>
+  <button class="bottom-tab" onclick="switchTab('members')" id="tabMembers">
+    <span class="tab-icon">👥</span>
+    <span class="tab-label">멤버</span>
+  </button>
+  <button class="bottom-tab" onclick="switchTab('history')" id="tabHistory">
+    <span class="tab-icon">📋</span>
+    <span class="tab-label">이력</span>
+  </button>
+</nav>
 
 <div class="modal-overlay" id="landingModal">
   <div class="modal" style="padding:36px 40px; min-width:340px;">
