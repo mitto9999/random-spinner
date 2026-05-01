@@ -453,6 +453,28 @@
     .tab-content { display: none; flex-direction: column; gap: 12px; flex: 1; overflow: hidden; }
     .tab-content.active { display: flex; }
 
+    .page-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #111;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .settings-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .settings-label {
+      font-size: 12px;
+      font-weight: 800;
+      color: #555;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
     .panel h2 {
       font-size: 20px;
       font-weight: 800;
@@ -940,7 +962,7 @@
 <body>
 
 <div class="app">
-  <div class="spinner-section">
+  <div class="spinner-section" id="spinnerSection">
     <div class="wheel-container">
       <div class="pointer" id="pointer"></div>
       <canvas id="wheel" width="840" height="840"></canvas>
@@ -966,6 +988,7 @@
     </div>
 
     <div class="tab-content" id="contentMembers">
+      <h2 class="page-title">멤버 관리</h2>
       <button class="add-member-btn" onclick="openAddMemberModal()">+ 멤버 추가</button>
       <div class="team-filter-chips" id="teamFilterChips"></div>
       <div class="bulk-text-action">
@@ -976,8 +999,12 @@
     </div>
 
     <div class="tab-content" id="contentHistory">
-      <div class="history-list" id="historyList"></div>
-      <button class="clear-history-btn" onclick="clearHistory()">이력 삭제</button>
+      <h2 class="page-title">설정</h2>
+      <div class="settings-section">
+        <div class="settings-label">당첨 이력</div>
+        <div class="history-list" id="historyList"></div>
+        <button class="clear-history-btn" onclick="clearHistory()">이력 삭제</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2104,8 +2131,10 @@
     document.getElementById('contentManage').classList.toggle('active', tab === 'home');
     document.getElementById('contentMembers').classList.toggle('active', tab === 'members');
     document.getElementById('contentHistory').classList.toggle('active', tab === 'settings');
+    document.getElementById('spinnerSection').style.display = (tab === 'home') ? 'flex' : 'none';
     if (tab === 'settings') renderHistory();
     if (tab === 'members') renderMembers();
+    window.scrollTo(0, 0);
   }
 
   function showResult(name) {
