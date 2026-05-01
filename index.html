@@ -1086,7 +1086,7 @@
     '#e17055', '#00cec9', '#6c5ce7', '#fdcb6e', '#e84393',
     '#0984e3', '#d63031', '#00b894', '#e056fd', '#f78fb3',
   ];
-  const WHEEL_COLORS = ['#ffffff', '#f0f0f0'];
+  const WHEEL_COLORS = ['#ffffff', '#f8f8f8'];
 
   let items = [];          // [{id, name}]
   let members = [];        // [{id, name, dislikes: [name, ...]}]
@@ -1332,11 +1332,8 @@
     // 중심 원
     ctx.beginPath();
     ctx.arc(CX, CY, 32, 0, Math.PI * 2);
-    ctx.fillStyle = '#ff5fa2';
+    ctx.fillStyle = '#222222';
     ctx.fill();
-    ctx.strokeStyle = '#111';
-    ctx.lineWidth = 4;
-    ctx.stroke();
   }
 
   function renderItems() {
