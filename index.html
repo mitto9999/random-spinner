@@ -973,15 +973,6 @@
   </div>
 
   <div class="panel">
-    <div class="group-bar" id="groupBar" style="display:none;">
-      <span class="group-icon" id="groupIcon">👥</span>
-      <span class="group-name" id="groupNameDisplay"></span>
-      <button class="group-action" id="lockBtn" onclick="toggleLock()" title="편집 권한" style="display:none;">🔒</button>
-      <button class="group-action" id="shareEditBtn" onclick="shareEditLink()" title="편집 링크 복사 (그룹장 권한 부여)" style="display:none;">🔑</button>
-      <button class="group-action" onclick="shareGroup()" title="공유 링크 복사 (보기)">📋</button>
-      <button class="group-action" onclick="leaveGroup()" title="다른 그룹 선택">🚪</button>
-    </div>
-
     <div class="tab-content active" id="contentManage">
       <button class="add-restaurant-btn" onclick="openAddRestaurantModal()">+ 식당 추가</button>
       <div class="items-list" id="itemsList"></div>
@@ -1000,6 +991,17 @@
 
     <div class="tab-content" id="contentHistory">
       <h2 class="page-title">설정</h2>
+      <div class="settings-section">
+        <div class="settings-label">그룹</div>
+        <div class="group-bar" id="groupBar" style="display:none;">
+          <span class="group-icon" id="groupIcon">👥</span>
+          <span class="group-name" id="groupNameDisplay"></span>
+          <button class="group-action" id="lockBtn" onclick="toggleLock()" title="편집 권한" style="display:none;">🔒</button>
+          <button class="group-action" id="shareEditBtn" onclick="shareEditLink()" title="편집 링크 복사 (그룹장 권한 부여)" style="display:none;">🔑</button>
+          <button class="group-action" onclick="shareGroup()" title="공유 링크 복사 (보기)">📋</button>
+          <button class="group-action" onclick="leaveGroup()" title="다른 그룹 선택">🚪</button>
+        </div>
+      </div>
       <div class="settings-section">
         <div class="settings-label">당첨 이력</div>
         <div class="history-list" id="historyList"></div>
