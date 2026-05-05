@@ -400,6 +400,46 @@
       color: inherit;
     }
 
+    /* 플로팅 버튼 (FAB) */
+    .fab-container {
+      position: fixed;
+      bottom: calc(80px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 375px;
+      display: flex;
+      justify-content: flex-end;
+      padding: 0 20px;
+      pointer-events: none;
+      z-index: 40;
+    }
+
+    .fab {
+      pointer-events: auto;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #4cd5b8;
+      color: #111;
+      border: none;
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fab:hover {
+      background: #3bbfa3;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.22);
+    }
+
     /* 바텀탭 (모바일 네비게이션) */
     .bottom-tabs {
       position: fixed;
@@ -1090,7 +1130,6 @@
 
     <div class="tab-content" id="contentMembers">
       <h2 class="page-title">멤버 관리</h2>
-      <button class="add-member-btn" onclick="openAddMemberModal()">+ 멤버 추가</button>
       <div class="team-filter-chips" id="teamFilterChips"></div>
       <div class="bulk-text-action">
         <input type="checkbox" id="selectAllCheckbox" onchange="handleSelectAllCheckbox(event)">
@@ -1130,6 +1169,10 @@
       </div>
     </div>
   </div>
+</div>
+
+<div class="fab-container" id="fabContainer" style="display:none;">
+  <button class="fab" onclick="openAddMemberModal()" title="멤버 추가">+</button>
 </div>
 
 <nav class="bottom-tabs">
@@ -2339,6 +2382,8 @@
     document.getElementById('contentCalendar').classList.toggle('active', tab === 'calendar');
     document.getElementById('contentHistory').classList.toggle('active', tab === 'settings');
     document.getElementById('spinnerSection').style.display = (tab === 'home') ? 'flex' : 'none';
+    const fab = document.getElementById('fabContainer');
+    if (fab) fab.style.display = (tab === 'members' && currentGroup && currentGroup.isOwner) ? 'flex' : 'none';
     if (tab === 'settings') renderHistory();
     if (tab === 'members') renderMembers();
     if (tab === 'calendar') renderCalendar();
