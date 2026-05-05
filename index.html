@@ -503,7 +503,10 @@
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
+      grid-template-rows: auto repeat(6, 1fr);
       gap: 4px;
+      flex: 1;
+      min-height: 320px;
     }
 
     .cal-dow {
@@ -518,15 +521,15 @@
     .cal-dow.sat { color: #54a0ff; }
 
     .cal-day {
-      aspect-ratio: 1;
       background: #f8f8f8;
       border-radius: 6px;
-      padding: 4px 4px;
+      padding: 4px;
       display: flex;
       flex-direction: column;
       gap: 2px;
       overflow: hidden;
       border: 0.5px solid transparent;
+      min-height: 0;
     }
 
     .cal-day.empty {
@@ -2273,6 +2276,9 @@
         </div>
       `;
     }
+
+    const trailingCells = 42 - (startDOW + totalDays);
+    for (let i = 0; i < trailingCells; i++) html += `<div class="cal-day empty"></div>`;
 
     const grid = document.getElementById('calendarGrid');
     if (grid) grid.innerHTML = html;
