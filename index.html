@@ -498,6 +498,31 @@
       font-size: 16px;
       font-weight: 800;
       color: #111;
+      flex: 1;
+      text-align: center;
+    }
+
+    .cal-today {
+      background: #fff;
+      border: 0.5px solid #111;
+      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      font-size: 13px;
+      font-weight: 800;
+      color: #111;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .cal-today:hover {
+      background: #ff5fa2;
+      color: #fff;
+      border-color: #ff5fa2;
     }
 
     .calendar-grid {
@@ -1079,6 +1104,7 @@
       <div class="calendar-header">
         <button class="cal-nav" onclick="navCalendar(-1)">‹</button>
         <span class="cal-month" id="calMonth"></span>
+        <button class="cal-today" id="todayBtn" onclick="goToday()" title="오늘로 이동"></button>
         <button class="cal-nav" onclick="navCalendar(1)">›</button>
       </div>
       <div class="calendar-grid" id="calendarGrid"></div>
@@ -2234,6 +2260,13 @@
     renderCalendar();
   }
 
+  function goToday() {
+    const now = new Date();
+    calendarYear = now.getFullYear();
+    calendarMonth = now.getMonth();
+    renderCalendar();
+  }
+
   function renderCalendar() {
     if (calendarYear == null) {
       const now = new Date();
@@ -2243,6 +2276,9 @@
 
     const monthEl = document.getElementById('calMonth');
     if (monthEl) monthEl.textContent = `${calendarYear}년 ${calendarMonth + 1}월`;
+
+    const todayBtn = document.getElementById('todayBtn');
+    if (todayBtn) todayBtn.textContent = new Date().getDate();
 
     const byDate = {};
     history.forEach(h => {
